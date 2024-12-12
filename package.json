@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "frontend": "vite",
-    "backend": "ts-node --transpile-only server/index.ts",
+    "backend": "node --loader ./custom-loader.js server/index.ts",
     "dev": "concurrently \"npm run frontend\" \"npm run backend\"",
     "build": "vite build",
     "lint": "eslint .",
