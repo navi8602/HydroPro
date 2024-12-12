@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card } from '../components/ui/Card';
@@ -21,25 +20,27 @@ export function LoginPage() {
 
     try {
       const cleanPhone = phoneNumber.replace(/\D/g, '');
-      const response = await fetch('/api/auth/send-code', {
+      setError('');
+
+      const response = await fetch('http://0.0.0.0:3000/api/auth/send-code', {
         method: 'POST',
-        headers: { 
+        headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json'
         },
         body: JSON.stringify({ phone: cleanPhone })
       });
-      
+
+      const data = await response.json();
+
       if (response.ok) {
         setStep('code');
-        setError('');
       } else {
-        const data = await response.json();
-        setError(data.error || 'Ошибка при отправке кода');
+        setError(data.message || 'Ошибка при отправке кода');
       }
     } catch (error) {
       console.error('Error:', error);
-      setError('Ошибка сервера. Пожалуйста, попробуйте позже');
+      setError('Сервер недоступен. Попробуйте позже');
     }
   };
 
@@ -50,7 +51,7 @@ export function LoginPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ phone: phoneNumber, code })
       });
-      
+
       if (response.ok) {
         const { token } = await response.json();
         localStorage.setItem('token', token);
@@ -83,14 +84,14 @@ export function LoginPage() {
               value={phoneNumber}
               onChange={(e) => {
                 let value = e.target.value.replace(/\D/g, '');
-                
+
                 if (value.startsWith('7') || value.startsWith('8')) {
                   value = value.substring(1);
                 }
-                
+
                 if (value.length <= 10) {
                   let formatted = '+7';
-                  
+
                   if (value.length > 0) {
                     formatted += ' (' + value.slice(0, Math.min(3, value.length));
                   }
@@ -103,7 +104,7 @@ export function LoginPage() {
                   if (value.length > 8) {
                     formatted += '-' + value.slice(8, Math.min(10, value.length));
                   }
-                  
+
                   setPhoneNumber(formatted);
                 }
               }}
