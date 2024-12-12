@@ -385,6 +385,26 @@ app.patch('/api/alerts/:id/read', authenticateToken, async (req, res) => {
   }
 });
 
+// Получение схемы базы данных
+app.get('/api/database/schema', async (req, res) => {
+  try {
+    const tables = await prisma.$queryRaw`
+      SELECT 
+        name as table_name
+      FROM 
+        sqlite_master 
+      WHERE 
+        type='table' AND 
+        name NOT LIKE 'sqlite_%' AND 
+        name NOT LIKE '_prisma_%'
+    `;
+    res.json(tables);
+  } catch (error) {
+    console.error('Error:', error);
+    res.status(500).json({ error: 'Ошибка сервера' });
+  }
+});
+
 app.listen(3000, '0.0.0.0', () => {
   console.log('Server running on http://0.0.0.0:3000');
 });
