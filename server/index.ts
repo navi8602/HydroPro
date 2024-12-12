@@ -28,8 +28,20 @@ app.get('/api/health', (_req, res) => {
   res.json({ status: 'ok' });
 });
 
-app.post('/api/auth/login', (req, res) => {
-  res.json({ success: true, token: 'test-token' });
+app.post('/api/auth/send-code', (req, res) => {
+  const { phone } = req.body;
+  // В реальном приложении здесь была бы отправка СМС
+  res.json({ success: true, message: 'Code sent successfully' });
+});
+
+app.post('/api/auth/verify-code', (req, res) => {
+  const { phone, code } = req.body;
+  // В реальном приложении здесь была бы проверка кода
+  if (code === '1234') {
+    res.json({ success: true, token: 'test-token' });
+  } else {
+    res.status(400).json({ error: 'Invalid code' });
+  }
 });
 
 startServer(port);
