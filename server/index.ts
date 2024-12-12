@@ -195,6 +195,126 @@ app.post('/api/metrics', authenticateToken, async (req, res) => {
   }
 });
 
+// Растения
+app.get('/api/plants/:systemId', authenticateToken, async (req, res) => {
+  try {
+    const { systemId } = req.params;
+    const plants = await prisma.plant.findMany({
+      where: { systemId: parseInt(systemId) },
+      orderBy: { position: 'asc' }
+    });
+    res.json(plants);
+  } catch (error) {
+    console.error('Error:', error);
+    res.status(500).json({ error: 'Ошибка сервера' });
+  }
+});
+
+app.patch('/api/plants/:id/status', authenticateToken, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { status } = req.body;
+    
+    const plant = await prisma.plant.update({
+      where: { id: parseInt(id) },
+      data: { status }
+    });
+    
+    res.json(plant);
+  } catch (error) {
+    console.error('Error:', error);
+    res.status(500).json({ error: 'Ошибка сервера' });
+  }
+});
+
+// Метрики
+app.get('/api/metrics/:systemId', authenticateToken, async (req, res) => {
+  try {
+    const { systemId } = req.params;
+    const { period } = req.query;
+    
+    let startDate = new Date();
+    switch(period) {
+      case 'day':
+        startDate.setDate(startDate.getDate() - 1);
+        break;
+      case 'week':
+        startDate.setDate(startDate.getDate() - 7);
+        break;
+      case 'month':
+        startDate.setMonth(startDate.getMonth() - 1);
+        break;
+      default:
+        startDate.setHours(startDate.getHours() - 24);
+    }
+
+    const metrics = await prisma.metrics.findMany({
+      where: { 
+        systemId: parseInt(systemId),
+        timestamp: { gte: startDate }
+      },
+      orderBy: { timestamp: 'asc' }
+    });
+    
+    res.json(metrics);
+  } catch (error) {
+    console.error('Error:', error);
+    res.status(500).json({ error: 'Ошибка сервера' });
+  }
+});
+
+// Уведомления и оповещения
+app.post('/api/alerts', authenticateToken, async (req, res) => {
+  try {
+    const { userId } = req.user;
+    const { systemId, type, message } = req.body;
+    
+    const alert = await prisma.alert.create({
+      data: {
+        userId,
+        systemId,
+        type,
+        message,
+        read: false
+      }
+    });
+    
+    res.json(alert);
+  } catch (error) {
+    console.error('Error:', error);
+    res.status(500).json({ error: 'Ошибка сервера' });
+  }
+});
+
+app.get('/api/alerts', authenticateToken, async (req, res) => {
+  try {
+    const { userId } = req.user;
+    const alerts = await prisma.alert.findMany({
+      where: { userId },
+      orderBy: { createdAt: 'desc' },
+      take: 50
+    });
+    res.json(alerts);
+  } catch (error) {
+    console.error('Error:', error);
+    res.status(500).json({ error: 'Ошибка сервера' });
+  }
+});
+
+app.patch('/api/alerts/:id/read', authenticateToken, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const alert = await prisma.alert.update({
+      where: { id: parseInt(id) },
+      data: { read: true }
+    });
+    res.json(alert);
+  } catch (error) {
+    console.error('Error:', error);
+    res.status(500).json({ error: 'Ошибка сервера' });
+  }
+});
+
 app.listen(3000, '0.0.0.0', () => {
   console.log('Server running on http://0.0.0.0:3000');
 });
