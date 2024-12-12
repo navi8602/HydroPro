@@ -19,12 +19,12 @@ export function LoginPage() {
       }
       
       setError('');
-      const response = await fetch('http://0.0.0.0:3000/api/auth/send-code', {
+      const response = await fetch('/api/auth/send-code', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Accept': 'application/json'
         },
+        credentials: 'include',
         body: JSON.stringify({ phone: cleanPhone })
       });
 

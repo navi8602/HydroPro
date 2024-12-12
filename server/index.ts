@@ -9,9 +9,8 @@ const app = express();
 const JWT_SECRET = process.env.JWT_SECRET || 'hydro-pro-secret-key';
 
 app.use(cors({
-  origin: '*',
-  methods: ['GET', 'POST'],
-  allowedHeaders: ['Content-Type', 'Accept']
+  origin: true,
+  credentials: true
 }));
 app.use(express.json());
 
