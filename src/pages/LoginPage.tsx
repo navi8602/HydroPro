@@ -60,7 +60,8 @@ export function LoginPage() {
         setError(data.error);
       }
     } catch (error) {
-      setError('Ошибка сервера');
+      setError('Ошибка сервера. Попробуйте позже');
+      console.error('Error:', error);
     }
   };
 

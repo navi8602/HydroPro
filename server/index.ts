@@ -6,7 +6,7 @@ import jwt from 'jsonwebtoken';
 
 const prisma = new PrismaClient();
 const app = express();
-const JWT_SECRET = 'your-secret-key';
+const JWT_SECRET = process.env.JWT_SECRET || 'hydro-pro-secret-key';
 
 app.use(cors());
 app.use(express.json());
@@ -39,7 +39,9 @@ app.post('/api/auth/send-code', async (req, res) => {
     }
 
     const cleanPhone = phone.replace(/\D/g, '');
+    // Генерируем код из 4 цифр
     const code = Math.floor(1000 + Math.random() * 9000).toString();
+    console.log(`Код подтверждения для ${cleanPhone}: ${code}`);
     
     await prisma.user.upsert({
       where: { phone: cleanPhone },
