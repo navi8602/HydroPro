@@ -4,6 +4,7 @@ import { Layout } from './components/layout/Layout';
 import { DashboardPage } from './pages/DashboardPage';
 import { SystemsPage } from './pages/SystemsPage';
 import { PlantsPage } from './pages/PlantsPage';
+import { LoginPage } from './pages/LoginPage'; // Added import for LoginPage
 import { HYDROPONIC_SYSTEMS } from './data/systems';
 import { NotificationProvider } from './contexts/NotificationContext';
 import type { RentedSystem } from './types/system';
@@ -90,6 +91,7 @@ function App() {
               path="/plants" 
               element={<PlantsPage />} 
             />
+            <Route path="/login" element={<LoginPage />} /> {/* Added route for LoginPage */}
           </Routes>
         </Layout>
       </BrowserRouter>
