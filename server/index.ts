@@ -1,9 +1,6 @@
 
 import express from 'express';
 import cors from 'cors';
-import { PrismaClient } from '@prisma/client';
-
-const prisma = new PrismaClient();
 
 const app = express();
 const port = process.env.PORT || 3002;
@@ -42,6 +39,15 @@ app.post('/api/auth/verify-code', async (req, res) => {
   // В реальном приложении здесь была бы проверка кода
   if (code === '1234') {
     try {
+      const { PrismaClient } = require('@prisma/client');
+      const prisma = new PrismaClient({
+        datasources: {
+          db: {
+            url: "file:./dev.db"
+          }
+        }
+      });
+      
       const user = await prisma.user.upsert({
         where: { phone },
         update: {},
