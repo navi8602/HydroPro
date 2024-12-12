@@ -40,7 +40,13 @@ app.post('/api/auth/verify-code', async (req, res) => {
   if (code === '1234') {
     try {
       const { PrismaClient } = require('@prisma/client');
-      const prisma = new PrismaClient();
+      const prisma = new PrismaClient({
+        datasources: {
+          db: {
+            url: "file:./dev.db"
+          }
+        }
+      });
       
       const user = await prisma.user.upsert({
         where: { phone },
