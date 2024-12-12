@@ -82,21 +82,28 @@ export function LoginPage() {
               type="tel"
               value={phoneNumber}
               onChange={(e) => {
-                const value = e.target.value.replace(/\D/g, '');
+                let value = e.target.value.replace(/\D/g, '');
+                
+                if (value.startsWith('7') || value.startsWith('8')) {
+                  value = value.substring(1);
+                }
+                
                 if (value.length <= 10) {
                   let formatted = '+7';
+                  
                   if (value.length > 0) {
-                    formatted += ' (' + value.substring(0, 3);
-                    if (value.length > 3) {
-                      formatted += ') ' + value.substring(3, 6);
-                      if (value.length > 6) {
-                        formatted += '-' + value.substring(6, 8);
-                        if (value.length > 8) {
-                          formatted += '-' + value.substring(8, 10);
-                        }
-                      }
-                    }
+                    formatted += ' (' + value.slice(0, Math.min(3, value.length));
                   }
+                  if (value.length > 3) {
+                    formatted += ') ' + value.slice(3, Math.min(6, value.length));
+                  }
+                  if (value.length > 6) {
+                    formatted += '-' + value.slice(6, Math.min(8, value.length));
+                  }
+                  if (value.length > 8) {
+                    formatted += '-' + value.slice(8, Math.min(10, value.length));
+                  }
+                  
                   setPhoneNumber(formatted);
                 }
               }}
