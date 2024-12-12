@@ -71,6 +71,130 @@ app.post('/api/auth/verify-code', async (req, res) => {
   }
 });
 
+// Защищенный роут для проверки аутентификации
+const authenticateToken = (req: any, res: any, next: any) => {
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1];
+
+  if (!token) {
+    return res.status(401).json({ error: 'Требуется авторизация' });
+  }
+
+  jwt.verify(token, JWT_SECRET, (err: any, user: any) => {
+    if (err) {
+      return res.status(403).json({ error: 'Недействительный токен' });
+    }
+    req.user = user;
+    next();
+  });
+};
+
+// Системы
+app.post('/api/systems/rent', authenticateToken, async (req, res) => {
+  try {
+    const { userId } = req.user;
+    const { systemName, capacity, rentalPeriod } = req.body;
+    
+    const startDate = new Date();
+    const endDate = new Date();
+    endDate.setMonth(endDate.getMonth() + rentalPeriod);
+
+    const system = await prisma.rentedSystem.create({
+      data: {
+        userId,
+        systemName,
+        capacity,
+        rentalPeriod,
+        startDate,
+        endDate
+      }
+    });
+
+    res.json(system);
+  } catch (error) {
+    console.error('Error:', error);
+    res.status(500).json({ error: 'Ошибка сервера' });
+  }
+});
+
+app.get('/api/systems', authenticateToken, async (req, res) => {
+  try {
+    const { userId } = req.user;
+    const systems = await prisma.rentedSystem.findMany({
+      where: { userId },
+      include: {
+        plants: true,
+        metrics: {
+          orderBy: { timestamp: 'desc' },
+          take: 1
+        }
+      }
+    });
+    res.json(systems);
+  } catch (error) {
+    console.error('Error:', error);
+    res.status(500).json({ error: 'Ошибка сервера' });
+  }
+});
+
+// Растения
+app.post('/api/plants', authenticateToken, async (req, res) => {
+  try {
+    const { systemId, name, position, expectedHarvestDate } = req.body;
+    
+    const plant = await prisma.plant.create({
+      data: {
+        systemId,
+        name,
+        position,
+        plantedDate: new Date(),
+        expectedHarvestDate: new Date(expectedHarvestDate),
+        status: 'healthy'
+      }
+    });
+
+    res.json(plant);
+  } catch (error) {
+    console.error('Error:', error);
+    res.status(500).json({ error: 'Ошибка сервера' });
+  }
+});
+
+app.delete('/api/plants/:id', authenticateToken, async (req, res) => {
+  try {
+    const { id } = req.params;
+    await prisma.plant.delete({
+      where: { id: parseInt(id) }
+    });
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Error:', error);
+    res.status(500).json({ error: 'Ошибка сервера' });
+  }
+});
+
+// Метрики
+app.post('/api/metrics', authenticateToken, async (req, res) => {
+  try {
+    const { systemId, temperature, humidity, nutrientLevel, phLevel } = req.body;
+    
+    const metric = await prisma.metrics.create({
+      data: {
+        systemId,
+        temperature,
+        humidity,
+        nutrientLevel,
+        phLevel
+      }
+    });
+
+    res.json(metric);
+  } catch (error) {
+    console.error('Error:', error);
+    res.status(500).json({ error: 'Ошибка сервера' });
+  }
+});
+
 app.listen(3000, '0.0.0.0', () => {
   console.log('Server running on http://0.0.0.0:3000');
 });
