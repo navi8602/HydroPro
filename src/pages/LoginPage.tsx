@@ -11,36 +11,31 @@ export function LoginPage() {
   const navigate = useNavigate();
 
   const handleSendCode = async () => {
-    // Проверка формата номера телефона
-    const phoneRegex = /^\+7 \(\d{3}\) \d{3}-\d{2}-\d{2}$/;
-    if (!phoneRegex.test(phoneNumber)) {
-      setError('Введите номер в формате +7 (999) 999-99-99');
-      return;
-    }
-
     try {
       const cleanPhone = phoneNumber.replace(/\D/g, '');
+      if (cleanPhone.length !== 11) {
+        setError('Введите корректный номер телефона');
+        return;
+      }
+      
       setError('');
-
-      const response = await fetch('http://0.0.0.0:3000/api/auth/send-code', {
+      const response = await fetch('/api/auth/send-code', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Accept': 'application/json'
         },
+        credentials: 'include',
         body: JSON.stringify({ phone: cleanPhone })
       });
 
-      const data = await response.json();
-
-      if (response.ok) {
-        setStep('code');
-      } else {
-        setError(data.message || 'Ошибка при отправке кода');
+      if (!response.ok) {
+        throw new Error('Ошибка при отправке кода');
       }
+
+      setStep('code');
     } catch (error) {
       console.error('Error:', error);
-      setError('Сервер недоступен. Попробуйте позже');
+      setError('Не удалось отправить код. Попробуйте позже');
     }
   };
 
