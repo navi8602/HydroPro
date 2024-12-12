@@ -3,6 +3,11 @@ import express from 'express';
 import cors from 'cors';
 import { PrismaClient } from '@prisma/client';
 import jwt from 'jsonwebtoken';
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 const app = express();
 const prisma = new PrismaClient();
@@ -28,12 +33,11 @@ app.post('/api/auth/send-code', async (req, res) => {
     const cleanPhone = phone.replace(/\D/g, '');
     const code = generateCode();
     
-    // Сохраняем код с временем истечения
     await prisma.user.upsert({
       where: { phone: cleanPhone },
       update: {
         verificationCode: code,
-        verificationCodeExpires: new Date(Date.now() + 5 * 60 * 1000), // 5 минут
+        verificationCodeExpires: new Date(Date.now() + 5 * 60 * 1000),
         verificationAttempts: 0
       },
       create: {
