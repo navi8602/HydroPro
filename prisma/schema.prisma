@@ -12,9 +12,24 @@ model User {
   id              Int      @id @default(autoincrement())
   phone           String   @unique
   verificationCode String?
+  role            String   @default("user") // admin, user, viewer
+  permissions     Permission[]
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
   systems         RentedSystem[]
+}
+
+model Permission {
+  id          Int      @id @default(autoincrement())
+  userId      Int
+  user        User     @relation(fields: [userId], references: [id])
+  systemId    Int
+  system      RentedSystem @relation(fields: [systemId], references: [id])
+  accessLevel String   // full, readonly, metrics
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([userId, systemId])
 }
 
 model RentedSystem {

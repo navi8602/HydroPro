@@ -1,4 +1,3 @@
-
 import express from 'express';
 import { PrismaClient } from '@prisma/client';
 import cors from 'cors';
@@ -89,6 +88,31 @@ const authenticateToken = (req: any, res: any, next: any) => {
   });
 };
 
+const checkSystemPermission = async (req, res, next) => {
+  try {
+    const { userId } = req.user;
+    const systemId = parseInt(req.params.id);
+    
+    const permission = await prisma.permission.findUnique({
+      where: {
+        userId_systemId: {
+          userId,
+          systemId
+        }
+      }
+    });
+
+    if (!permission) {
+      return res.status(403).json({ error: 'Нет доступа к системе' });
+    }
+
+    req.permission = permission;
+    next();
+  } catch (error) {
+    res.status(500).json({ error: 'Ошибка сервера' });
+  }
+};
+
 // Системы
 app.post('/api/systems/rent', authenticateToken, async (req, res) => {
   try {
@@ -136,6 +160,20 @@ app.get('/api/systems', authenticateToken, async (req, res) => {
     res.status(500).json({ error: 'Ошибка сервера' });
   }
 });
+
+app.get('/api/systems/:id', authenticateToken, checkSystemPermission, async (req, res) => {
+  try {
+    const systemId = parseInt(req.params.id);
+    const system = await prisma.rentedSystem.findUnique({
+      where: { id: systemId }
+    });
+    res.json(system);
+  } catch (error) {
+    console.error('Error:', error);
+    res.status(500).json({ error: 'Ошибка сервера' });
+  }
+});
+
 
 // Растения
 app.post('/api/plants', authenticateToken, async (req, res) => {
