@@ -11,6 +11,24 @@ const JWT_SECRET = 'your-secret-key';
 app.use(cors());
 app.use(express.json());
 
+// Middleware для проверки JWT
+const authenticateToken = (req: any, res: any, next: any) => {
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1];
+
+  if (!token) {
+    return res.status(401).json({ error: 'Требуется авторизация' });
+  }
+
+  jwt.verify(token, JWT_SECRET, (err: any, user: any) => {
+    if (err) {
+      return res.status(403).json({ error: 'Недействительный токен' });
+    }
+    req.user = user;
+    next();
+  });
+};
+
 // Отправка кода подтверждения
 app.post('/api/auth/send-code', async (req, res) => {
   try {
@@ -29,7 +47,6 @@ app.post('/api/auth/send-code', async (req, res) => {
       create: { phone: cleanPhone, code }
     });
     
-    // В реальном приложении здесь будет отправка SMS
     console.log(`Код для ${cleanPhone}: ${code}`);
     
     res.json({ success: true });
@@ -61,6 +78,24 @@ app.post('/api/auth/verify-code', async (req, res) => {
     });
     
     res.json({ token });
+  } catch (error) {
+    console.error('Server error:', error);
+    res.status(500).json({ error: 'Ошибка сервера' });
+  }
+});
+
+// Получение профиля пользователя
+app.get('/api/user/profile', authenticateToken, async (req, res) => {
+  try {
+    const user = await prisma.user.findUnique({
+      where: { id: req.user.userId }
+    });
+    
+    if (!user) {
+      return res.status(404).json({ error: 'Пользователь не найден' });
+    }
+    
+    res.json({ user });
   } catch (error) {
     console.error('Server error:', error);
     res.status(500).json({ error: 'Ошибка сервера' });
