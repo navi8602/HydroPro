@@ -11,7 +11,6 @@ const JWT_SECRET = process.env.JWT_SECRET || 'hydro-pro-secret-key';
 app.use(cors());
 app.use(express.json());
 
-// Middleware для проверки JWT
 const authenticateToken = (req: any, res: any, next: any) => {
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.split(' ')[1];
@@ -29,19 +28,16 @@ const authenticateToken = (req: any, res: any, next: any) => {
   });
 };
 
-// Отправка кода подтверждения
+// Аутентификация
 app.post('/api/auth/send-code', async (req, res) => {
   try {
     const { phone } = req.body;
-    
     if (!phone) {
       return res.status(400).json({ error: 'Номер телефона обязателен' });
     }
 
     const cleanPhone = phone.replace(/\D/g, '');
-    // Генерируем код из 4 цифр
     const code = Math.floor(1000 + Math.random() * 9000).toString();
-    console.log(`Код подтверждения для ${cleanPhone}: ${code}`);
     
     await prisma.user.upsert({
       where: { phone: cleanPhone },
@@ -50,7 +46,6 @@ app.post('/api/auth/send-code', async (req, res) => {
     });
     
     console.log(`Код для ${cleanPhone}: ${code}`);
-    
     res.json({ success: true });
   } catch (error) {
     console.error('Server error:', error);
@@ -58,7 +53,6 @@ app.post('/api/auth/send-code', async (req, res) => {
   }
 });
 
-// Проверка кода
 app.post('/api/auth/verify-code', async (req, res) => {
   try {
     const { phone, code } = req.body;
@@ -86,27 +80,92 @@ app.post('/api/auth/verify-code', async (req, res) => {
   }
 });
 
-// Получение профиля пользователя
-app.get('/api/user/profile', authenticateToken, async (req, res) => {
+// Системы
+app.post('/api/systems/rent', authenticateToken, async (req, res) => {
   try {
-    const user = await prisma.user.findUnique({
-      where: { id: req.user.userId }
+    const { systemName, capacity, rentalPeriod, startDate, endDate } = req.body;
+    
+    const system = await prisma.rentedSystem.create({
+      data: {
+        userId: req.user.userId,
+        systemName,
+        capacity,
+        rentalPeriod,
+        startDate: new Date(startDate),
+        endDate: new Date(endDate)
+      }
     });
     
-    if (!user) {
-      return res.status(404).json({ error: 'Пользователь не найден' });
-    }
-    
-    res.json({ user });
+    res.json(system);
   } catch (error) {
     console.error('Server error:', error);
     res.status(500).json({ error: 'Ошибка сервера' });
   }
 });
 
-app.use((err: any, req: any, res: any, next: any) => {
-  console.error('Server error:', err);
-  res.status(500).json({ error: 'Внутренняя ошибка сервера' });
+app.get('/api/systems', authenticateToken, async (req, res) => {
+  try {
+    const systems = await prisma.rentedSystem.findMany({
+      where: { userId: req.user.userId },
+      include: {
+        plants: true,
+        metrics: {
+          orderBy: { timestamp: 'desc' },
+          take: 1
+        }
+      }
+    });
+    
+    res.json(systems);
+  } catch (error) {
+    console.error('Server error:', error);
+    res.status(500).json({ error: 'Ошибка сервера' });
+  }
+});
+
+// Растения
+app.post('/api/plants', authenticateToken, async (req, res) => {
+  try {
+    const { systemId, name, position, plantedDate, expectedHarvestDate } = req.body;
+    
+    const plant = await prisma.plant.create({
+      data: {
+        systemId,
+        name,
+        position,
+        plantedDate: new Date(plantedDate),
+        expectedHarvestDate: new Date(expectedHarvestDate),
+        status: 'healthy'
+      }
+    });
+    
+    res.json(plant);
+  } catch (error) {
+    console.error('Server error:', error);
+    res.status(500).json({ error: 'Ошибка сервера' });
+  }
+});
+
+// Метрики
+app.post('/api/metrics', authenticateToken, async (req, res) => {
+  try {
+    const { systemId, temperature, humidity, nutrientLevel, phLevel } = req.body;
+    
+    const metrics = await prisma.metrics.create({
+      data: {
+        systemId,
+        temperature,
+        humidity,
+        nutrientLevel,
+        phLevel
+      }
+    });
+    
+    res.json(metrics);
+  } catch (error) {
+    console.error('Server error:', error);
+    res.status(500).json({ error: 'Ошибка сервера' });
+  }
 });
 
 app.listen(3001, '0.0.0.0', () => {

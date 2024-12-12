@@ -14,4 +14,44 @@ model User {
   code      String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  systems   RentedSystem[]
+}
+
+model RentedSystem {
+  id           Int      @id @default(autoincrement())
+  userId       Int
+  user         User     @relation(fields: [userId], references: [id])
+  systemName   String
+  capacity     Int
+  rentalPeriod Int
+  startDate    DateTime
+  endDate      DateTime
+  plants       Plant[]
+  metrics      Metrics[]
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model Plant {
+  id                  Int         @id @default(autoincrement())
+  systemId            Int
+  system              RentedSystem @relation(fields: [systemId], references: [id])
+  name                String
+  position            Int
+  plantedDate         DateTime
+  expectedHarvestDate DateTime
+  status             String
+  createdAt          DateTime    @default(now())
+  updatedAt          DateTime    @updatedAt
+}
+
+model Metrics {
+  id            Int         @id @default(autoincrement())
+  systemId      Int
+  system        RentedSystem @relation(fields: [systemId], references: [id])
+  temperature   Float
+  humidity      Float
+  nutrientLevel Float
+  phLevel       Float
+  timestamp     DateTime    @default(now())
 }
