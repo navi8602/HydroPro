@@ -15,19 +15,25 @@ export function LoginPage() {
     try {
       setLoading(true);
       setError('');
-      console.log('Sending code to:', phoneNumber);
       const cleanPhone = phoneNumber.replace(/\D/g, '');
       
       if (cleanPhone.length !== 11) {
         setError('Введите корректный номер телефона');
+        setLoading(false);
         return;
       }
+
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 5000);
 
       const response = await fetch('/api/auth/send-code', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ phone: cleanPhone })
+        body: JSON.stringify({ phone: cleanPhone }),
+        signal: controller.signal
       });
+      
+      clearTimeout(timeoutId);
 
       const data = await response.json();
       

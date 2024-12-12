@@ -26,6 +26,14 @@ app.post('/api/auth/send-code', async (req, res) => {
     const cleanPhone = phone.replace(/\D/g, '');
     const code = Math.floor(1000 + Math.random() * 9000).toString();
     
+    // Добавляем кэширование для предотвращения частых запросов
+    const cacheKey = `auth_${cleanPhone}`;
+    const cached = await prisma.user.findUnique({ where: { phone: cleanPhone } });
+    
+    if (cached?.verificationCodeExpires && cached.verificationCodeExpires > new Date()) {
+      return res.json({ success: true, message: 'Код уже отправлен' });
+    }
+    
     await prisma.user.upsert({
       where: { phone: cleanPhone },
       update: { 
