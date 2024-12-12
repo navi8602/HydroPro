@@ -24,6 +24,7 @@ export function LoginPage() {
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: 'include',
         body: JSON.stringify({ phone: cleanPhone })
       });
 
