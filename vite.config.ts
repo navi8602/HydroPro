@@ -10,12 +10,8 @@ export default defineConfig({
     proxy: {
       '/api': {
         target: 'http://0.0.0.0:3001',
-        changeOrigin: true,
-        secure: false
+        changeOrigin: true
       }
-    },
-    hmr: {
-      clientPort: 443,
     }
   }
 });
