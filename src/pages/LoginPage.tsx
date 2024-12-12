@@ -19,23 +19,24 @@ export function LoginPage() {
       }
       
       setError('');
-      const response = await fetch('/api/auth/send-code', {
+      const response = await fetch('http://0.0.0.0:3000/api/auth/send-code', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        credentials: 'include',
         body: JSON.stringify({ phone: cleanPhone })
       });
 
-      if (!response.ok) {
-        throw new Error('Ошибка при отправке кода');
+      const data = await response.json();
+      
+      if (response.ok) {
+        setStep('code');
+      } else {
+        setError(data.error || 'Ошибка при отправке кода');
       }
-
-      setStep('code');
     } catch (error) {
       console.error('Error:', error);
-      setError('Не удалось отправить код. Попробуйте позже');
+      setError('Сервер недоступен. Пожалуйста, попробуйте позже');
     }
   };
 
