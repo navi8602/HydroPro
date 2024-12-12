@@ -11,7 +11,9 @@ const JWT_SECRET = process.env.JWT_SECRET || 'hydro-pro-secret-key';
 
 app.post('/api/auth/send-code', async (req, res) => {
   try {
-    console.log('Received auth request:', req.body);
+    console.log('=== Received auth request ===');
+    console.log('Body:', req.body);
+    console.log('Headers:', req.headers);
     const { phone } = req.body;
     if (!phone) {
       return res.status(400).json({ error: 'Требуется номер телефона' });

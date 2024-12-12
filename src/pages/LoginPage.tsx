@@ -37,6 +37,7 @@ export function LoginPage() {
         setError(data.error || 'Ошибка при отправке кода');
       }
     } catch (error) {
+      console.error('Error sending code:', error);
       setError('Сервер недоступен');
     } finally {
       setLoading(false);
