@@ -19,7 +19,6 @@ export function LoginPage() {
       
       if (cleanPhone.length !== 11) {
         setError('Введите корректный номер телефона');
-        setLoading(false);
         return;
       }
 
@@ -37,8 +36,8 @@ export function LoginPage() {
         setError(data.error || 'Ошибка при отправке кода');
       }
     } catch (error) {
-      console.error('Error sending code:', error);
-      setError('Ошибка сервера. Попробуйте позже');
+      console.error('Error:', error);
+      setError('Сервер недоступен');
     } finally {
       setLoading(false);
     }
@@ -57,7 +56,6 @@ export function LoginPage() {
       const response = await fetch('/api/auth/verify-code', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
         body: JSON.stringify({ 
           phone: phoneNumber.replace(/\D/g, ''),
           code 
@@ -73,7 +71,8 @@ export function LoginPage() {
         setError(data.error || 'Неверный код');
       }
     } catch (error) {
-      setError('Ошибка сервера');
+      console.error('Error:', error);
+      setError('Сервер недоступен');
     } finally {
       setLoading(false);
     }
@@ -103,16 +102,16 @@ export function LoginPage() {
                 if (value.length <= 10) {
                   let formatted = '+7';
                   if (value.length > 0) {
-                    formatted += ' (' + value.slice(0, Math.min(3, value.length));
+                    formatted += ' (' + value.slice(0, 3);
                   }
                   if (value.length > 3) {
-                    formatted += ') ' + value.slice(3, Math.min(6, value.length));
+                    formatted += ') ' + value.slice(3, 6);
                   }
                   if (value.length > 6) {
-                    formatted += '-' + value.slice(6, Math.min(8, value.length));
+                    formatted += '-' + value.slice(6, 8);
                   }
                   if (value.length > 8) {
-                    formatted += '-' + value.slice(8, Math.min(10, value.length));
+                    formatted += '-' + value.slice(8, 10);
                   }
                   setPhoneNumber(formatted);
                 }
@@ -123,8 +122,8 @@ export function LoginPage() {
             />
             <button
               onClick={handleSendCode}
+              disabled={loading || phoneNumber.replace(/\D/g, '').length !== 11}
               className="w-full bg-blue-500 text-white p-2 rounded hover:bg-blue-600 disabled:opacity-50"
-              disabled={loading}
             >
               {loading ? 'Отправка...' : 'Получить код'}
             </button>
@@ -142,8 +141,8 @@ export function LoginPage() {
             />
             <button
               onClick={handleVerifyCode}
+              disabled={loading || code.length !== 4}
               className="w-full bg-blue-500 text-white p-2 rounded hover:bg-blue-600 disabled:opacity-50"
-              disabled={loading}
             >
               {loading ? 'Проверка...' : 'Войти'}
             </button>
