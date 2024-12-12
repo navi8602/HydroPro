@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "frontend": "vite",
-    "backend": "ts-node --esm server/index.ts",
+    "backend": "NODE_OPTIONS='--loader ts-node/esm' node server/index.ts",
     "dev": "concurrently \"npm run frontend\" \"npm run backend\"",
     "build": "vite build",
     "lint": "eslint .",
