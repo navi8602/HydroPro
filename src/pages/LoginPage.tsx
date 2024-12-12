@@ -21,7 +21,7 @@ export function LoginPage() {
 
     try {
       const cleanPhone = phoneNumber.replace(/\D/g, '');
-      const response = await fetch('http://0.0.0.0:3001/api/auth/send-code', {
+      const response = await fetch('http://0.0.0.0:3000/api/auth/send-code', {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
