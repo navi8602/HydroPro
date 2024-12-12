@@ -7,16 +7,48 @@ export function LoginPage() {
   const [phoneNumber, setPhoneNumber] = useState('');
   const [code, setCode] = useState('');
   const [step, setStep] = useState<'phone' | 'code'>('phone');
+  const [error, setError] = useState('');
   const navigate = useNavigate();
 
-  const handleSendCode = () => {
-    // Здесь будет логика отправки кода
-    setStep('code');
+  const handleSendCode = async () => {
+    try {
+      const response = await fetch('http://localhost:3001/api/auth/send-code', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone: phoneNumber })
+      });
+      
+      if (response.ok) {
+        setStep('code');
+        setError('');
+      } else {
+        const data = await response.json();
+        setError(data.error);
+      }
+    } catch (error) {
+      setError('Ошибка сервера');
+    }
   };
 
-  const handleVerifyCode = () => {
-    // Здесь будет логика проверки кода
-    navigate('/dashboard');
+  const handleVerifyCode = async () => {
+    try {
+      const response = await fetch('http://localhost:3001/api/auth/verify-code', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone: phoneNumber, code })
+      });
+      
+      if (response.ok) {
+        const { token } = await response.json();
+        localStorage.setItem('token', token);
+        navigate('/dashboard');
+      } else {
+        const data = await response.json();
+        setError(data.error);
+      }
+    } catch (error) {
+      setError('Ошибка сервера');
+    }
   };
 
   return (
@@ -25,6 +57,11 @@ export function LoginPage() {
         <h1 className="text-2xl font-bold text-center mb-6">
           Вход в систему
         </h1>
+        {error && (
+          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+            {error}
+          </div>
+        )}
         {step === 'phone' ? (
           <div className="space-y-4">
             <input
@@ -36,7 +73,7 @@ export function LoginPage() {
             />
             <button
               onClick={handleSendCode}
-              className="w-full bg-blue-500 text-white p-2 rounded"
+              className="w-full bg-blue-500 text-white p-2 rounded hover:bg-blue-600"
             >
               Получить код
             </button>
@@ -52,7 +89,7 @@ export function LoginPage() {
             />
             <button
               onClick={handleVerifyCode}
-              className="w-full bg-blue-500 text-white p-2 rounded"
+              className="w-full bg-blue-500 text-white p-2 rounded hover:bg-blue-600"
             >
               Войти
             </button>
