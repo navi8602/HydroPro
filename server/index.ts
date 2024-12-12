@@ -17,6 +17,7 @@ const generateCode = () => Math.floor(1000 + Math.random() * 9000).toString();
 
 app.post('/api/auth/send-code', async (req, res) => {
   try {
+    console.log('Received auth request:', req.body);
     const { phone } = req.body;
     if (!phone) {
       return res.status(400).json({ error: 'Требуется номер телефона' });

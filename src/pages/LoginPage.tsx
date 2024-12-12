@@ -15,6 +15,7 @@ export function LoginPage() {
     try {
       setLoading(true);
       setError('');
+      console.log('Sending code to:', phoneNumber);
       const cleanPhone = phoneNumber.replace(/\D/g, '');
       
       if (cleanPhone.length !== 11) {
