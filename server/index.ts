@@ -168,6 +168,14 @@ app.post('/api/metrics', authenticateToken, async (req, res) => {
   }
 });
 
-app.listen(3000, '0.0.0.0', () => {
-  console.log('Server running on port 3000');
+import https from 'https';
+import fs from 'fs';
+
+const options = {
+  key: fs.readFileSync('key.pem'),
+  cert: fs.readFileSync('cert.pem')
+};
+
+https.createServer(options, app).listen(3000, '0.0.0.0', () => {
+  console.log('Server running on port 3000 (HTTPS)');
 });
