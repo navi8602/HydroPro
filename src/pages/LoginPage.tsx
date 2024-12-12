@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card } from '../components/ui/Card';
-import InputMask from 'react-input-mask';
+import { IMaskInput } from 'react-imask';
 
 export function LoginPage() {
   const [phoneNumber, setPhoneNumber] = useState('');
@@ -78,10 +78,10 @@ export function LoginPage() {
         )}
         {step === 'phone' ? (
           <div className="space-y-4">
-            <InputMask
-              mask="+7 (999) 999-99-99"
+            <IMaskInput
+              mask="+7 (000) 000-00-00"
               value={phoneNumber}
-              onChange={(e) => setPhoneNumber(e.target.value)}
+              onAccept={(value) => setPhoneNumber(value)}
               placeholder="+7 (999) 999-99-99"
               className="w-full p-2 border rounded"
             />
