@@ -19,12 +19,11 @@ export function LoginPage() {
       }
       
       setError('');
-      const response = await fetch('http://0.0.0.0:3000/api/auth/send-code', {
+      const response = await fetch('https://hydro-pro.onrender.com/api/auth/send-code', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        credentials: 'include',
         body: JSON.stringify({ phone: cleanPhone })
       });
 
@@ -43,10 +42,13 @@ export function LoginPage() {
 
   const handleVerifyCode = async () => {
     try {
-      const response = await fetch('/api/auth/verify-code', {
+      const response = await fetch('https://hydro-pro.onrender.com/api/auth/verify-code', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ phone: phoneNumber, code })
+        body: JSON.stringify({ 
+          phone: phoneNumber.replace(/\D/g, ''),
+          code 
+        })
       });
 
       if (response.ok) {
