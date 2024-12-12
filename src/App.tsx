@@ -1,6 +1,6 @@
 
 import { useState } from 'react';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Layout } from './components/layout/Layout';
 import { DashboardPage } from './pages/DashboardPage';
 import { SystemsPage } from './pages/SystemsPage';
@@ -80,8 +80,9 @@ function App() {
       <BrowserRouter>
         <Routes>
           <Route path="/login" element={<LoginPage />} />
+          <Route path="/" element={<Navigate to="/login" replace />} />
           <Route element={<Layout />}>
-            <Route path="/" element={<DashboardPage rentedSystems={rentedSystems} />} />
+            <Route path="/dashboard" element={<DashboardPage rentedSystems={rentedSystems} />} />
             <Route path="/systems" element={<SystemsPage onRentSystem={handleRentSystem} />} />
             <Route path="/plants" element={<PlantsPage />} />
           </Route>

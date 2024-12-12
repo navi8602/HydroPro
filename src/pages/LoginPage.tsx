@@ -16,7 +16,7 @@ export function LoginPage() {
 
   const handleVerifyCode = () => {
     // Здесь будет логика проверки кода
-    navigate('/');
+    navigate('/dashboard');
   };
 
   return (
