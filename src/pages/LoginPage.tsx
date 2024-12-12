@@ -83,12 +83,20 @@ export function LoginPage() {
               value={phoneNumber}
               onChange={(e) => {
                 const value = e.target.value.replace(/\D/g, '');
-                if (value.length <= 11) {
-                  const formatted = value
-                    .replace(/^(\d{1})/, '+7 ($1')
-                    .replace(/^(\+7 \(\d{3})/, '$1)')
-                    .replace(/(\)\d{3})/, '$1-')
-                    .replace(/(-\d{2})/, '$1-');
+                if (value.length <= 10) {
+                  let formatted = '+7';
+                  if (value.length > 0) {
+                    formatted += ' (' + value.substring(0, 3);
+                    if (value.length > 3) {
+                      formatted += ') ' + value.substring(3, 6);
+                      if (value.length > 6) {
+                        formatted += '-' + value.substring(6, 8);
+                        if (value.length > 8) {
+                          formatted += '-' + value.substring(8, 10);
+                        }
+                      }
+                    }
+                  }
                   setPhoneNumber(formatted);
                 }
               }}
