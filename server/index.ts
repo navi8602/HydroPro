@@ -25,18 +25,22 @@ app.post('/api/auth/send-code', async (req, res) => {
     const cleanPhone = phone.replace(/\D/g, '');
     const code = generateCode();
     
-    // Create or update user with verification code
-    await prisma.user.upsert({
+    const user = await prisma.user.upsert({
       where: { phone: cleanPhone },
-      update: { verificationCode: code },
+      update: { 
+        verificationCode: code,
+        verificationCodeExpires: new Date(Date.now() + 5 * 60 * 1000) // 5 minutes
+      },
       create: { 
         phone: cleanPhone, 
-        verificationCode: code
+        verificationCode: code,
+        verificationCodeExpires: new Date(Date.now() + 5 * 60 * 1000),
+        role: 'USER'
       }
     });
 
     console.log(`Code for ${cleanPhone}: ${code}`); // For testing
-    res.json({ success: true });
+    res.json({ success: true, userId: user.id });
   } catch (error) {
     console.error('Error:', error);
     res.status(500).json({ error: 'Ошибка сервера' });
