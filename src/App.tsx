@@ -20,6 +20,7 @@ import { DashboardPage } from './pages/DashboardPage';
 import { SystemsPage } from './pages/SystemsPage';
 import { PlantsPage } from './pages/PlantsPage';
 import { LoginPage } from './pages/LoginPage';
+import { UsersPage } from './pages/UsersPage';
 import { HYDROPONIC_SYSTEMS } from './data/systems';
 import { NotificationProvider } from './contexts/NotificationContext';
 import type { RentedSystem } from './types/system';
