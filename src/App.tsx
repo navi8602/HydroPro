@@ -1,10 +1,11 @@
+
 import { useState } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { Layout } from './components/layout/Layout';
 import { DashboardPage } from './pages/DashboardPage';
 import { SystemsPage } from './pages/SystemsPage';
 import { PlantsPage } from './pages/PlantsPage';
-import { LoginPage } from './pages/LoginPage'; // Added import for LoginPage
+import { LoginPage } from './pages/LoginPage';
 import { HYDROPONIC_SYSTEMS } from './data/systems';
 import { NotificationProvider } from './contexts/NotificationContext';
 import type { RentedSystem } from './types/system';
@@ -77,23 +78,14 @@ function App() {
   return (
     <NotificationProvider>
       <BrowserRouter>
-        <Layout>
-          <Routes>
-            <Route 
-              path="/" 
-              element={<DashboardPage rentedSystems={rentedSystems} />} 
-            />
-            <Route 
-              path="/systems" 
-              element={<SystemsPage onRentSystem={handleRentSystem} />} 
-            />
-            <Route 
-              path="/plants" 
-              element={<PlantsPage />} 
-            />
-            <Route path="/login" element={<LoginPage />} /> {/* Added route for LoginPage */}
-          </Routes>
-        </Layout>
+        <Routes>
+          <Route path="/login" element={<LoginPage />} />
+          <Route element={<Layout />}>
+            <Route path="/" element={<DashboardPage rentedSystems={rentedSystems} />} />
+            <Route path="/systems" element={<SystemsPage onRentSystem={handleRentSystem} />} />
+            <Route path="/plants" element={<PlantsPage />} />
+          </Route>
+        </Routes>
       </BrowserRouter>
     </NotificationProvider>
   );
