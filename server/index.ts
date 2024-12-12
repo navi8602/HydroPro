@@ -6,58 +6,64 @@ import jwt from 'jsonwebtoken';
 
 const prisma = new PrismaClient();
 const app = express();
+const JWT_SECRET = 'your-secret-key';
 
 app.use(cors());
 app.use(express.json());
 
 // Отправка кода подтверждения
 app.post('/api/auth/send-code', async (req, res) => {
-  const { phone } = req.body;
-  
-  if (!phone || phone.length !== 11) {
-    return res.status(400).json({ error: 'Неверный формат номера телефона' });
-  }
-
   try {
+    const { phone } = req.body;
+    
+    if (!phone) {
+      return res.status(400).json({ error: 'Номер телефона обязателен' });
+    }
+
+    const cleanPhone = phone.replace(/\D/g, '');
     const code = Math.floor(1000 + Math.random() * 9000).toString();
     
-    const user = await prisma.user.upsert({
-      where: { phone },
+    await prisma.user.upsert({
+      where: { phone: cleanPhone },
       update: { code },
-      create: { phone, code }
+      create: { phone: cleanPhone, code }
     });
     
-    // Здесь будет логика отправки SMS
-    console.log(`Code for ${phone}: ${code}`);
+    // В реальном приложении здесь будет отправка SMS
+    console.log(`Код для ${cleanPhone}: ${code}`);
     
     res.json({ success: true });
   } catch (error) {
     console.error('Server error:', error);
-    res.status(500).json({ error: 'Произошла ошибка при обработке запроса' });
+    res.status(500).json({ error: 'Ошибка сервера' });
   }
 });
 
-// Проверка кода и выдача токена
+// Проверка кода
 app.post('/api/auth/verify-code', async (req, res) => {
-  const { phone, code } = req.body;
-  
   try {
-    const user = await prisma.user.findUnique({ where: { phone } });
+    const { phone, code } = req.body;
+    const cleanPhone = phone.replace(/\D/g, '');
+    
+    const user = await prisma.user.findUnique({
+      where: { phone: cleanPhone }
+    });
     
     if (!user || user.code !== code) {
-      return res.status(400).json({ error: 'Invalid code' });
+      return res.status(400).json({ error: 'Неверный код' });
     }
     
-    const token = jwt.sign({ userId: user.id }, 'your-secret-key');
+    const token = jwt.sign({ userId: user.id }, JWT_SECRET);
     
     await prisma.user.update({
-      where: { phone },
+      where: { phone: cleanPhone },
       data: { code: null }
     });
     
     res.json({ token });
   } catch (error) {
-    res.status(500).json({ error: 'Server error' });
+    console.error('Server error:', error);
+    res.status(500).json({ error: 'Ошибка сервера' });
   }
 });
 

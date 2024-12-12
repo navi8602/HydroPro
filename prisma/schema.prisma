@@ -9,7 +9,7 @@ datasource db {
 }
 
 model User {
-  id        String   @id @default(uuid())
+  id        Int      @id @default(autoincrement())
   phone     String   @unique
   code      String?
   createdAt DateTime @default(now())
