@@ -13,9 +13,14 @@ app.use(express.json());
 // Отправка кода подтверждения
 app.post('/api/auth/send-code', async (req, res) => {
   const { phone } = req.body;
-  const code = Math.floor(1000 + Math.random() * 9000).toString();
   
+  if (!phone || phone.length !== 11) {
+    return res.status(400).json({ error: 'Неверный формат номера телефона' });
+  }
+
   try {
+    const code = Math.floor(1000 + Math.random() * 9000).toString();
+    
     const user = await prisma.user.upsert({
       where: { phone },
       update: { code },
@@ -27,7 +32,8 @@ app.post('/api/auth/send-code', async (req, res) => {
     
     res.json({ success: true });
   } catch (error) {
-    res.status(500).json({ error: 'Server error' });
+    console.error('Server error:', error);
+    res.status(500).json({ error: 'Произошла ошибка при обработке запроса' });
   }
 });
 

@@ -12,11 +12,22 @@ export function LoginPage() {
   const navigate = useNavigate();
 
   const handleSendCode = async () => {
+    // Проверка формата номера телефона
+    const phoneRegex = /^\+7 \(\d{3}\) \d{3}-\d{2}-\d{2}$/;
+    if (!phoneRegex.test(phoneNumber)) {
+      setError('Введите номер в формате +7 (999) 999-99-99');
+      return;
+    }
+
     try {
-      const response = await fetch('http://localhost:3001/api/auth/send-code', {
+      const cleanPhone = phoneNumber.replace(/\D/g, '');
+      const response = await fetch('http://0.0.0.0:3001/api/auth/send-code', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ phone: phoneNumber })
+        headers: { 
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify({ phone: cleanPhone })
       });
       
       if (response.ok) {
@@ -24,10 +35,11 @@ export function LoginPage() {
         setError('');
       } else {
         const data = await response.json();
-        setError(data.error);
+        setError(data.error || 'Ошибка при отправке кода');
       }
     } catch (error) {
-      setError('Ошибка сервера');
+      console.error('Error:', error);
+      setError('Ошибка сервера. Пожалуйста, попробуйте позже');
     }
   };
 
