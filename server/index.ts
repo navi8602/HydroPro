@@ -23,13 +23,13 @@ app.post('/api/auth/send-code', async (req, res) => {
     }
 
     const cleanPhone = phone.replace(/\D/g, '');
-    const code = generateCode();
+    const code = Math.floor(1000 + Math.random() * 9000).toString();
     
-    const user = await prisma.user.upsert({
+    await prisma.user.upsert({
       where: { phone: cleanPhone },
       update: { 
         verificationCode: code,
-        verificationCodeExpires: new Date(Date.now() + 5 * 60 * 1000) // 5 minutes
+        verificationCodeExpires: new Date(Date.now() + 5 * 60 * 1000) // 5 минут
       },
       create: { 
         phone: cleanPhone, 
@@ -39,11 +39,12 @@ app.post('/api/auth/send-code', async (req, res) => {
       }
     });
 
-    console.log(`Code for ${cleanPhone}: ${code}`); // For testing
-    res.json({ success: true, userId: user.id });
+    // В реальном приложении здесь был бы код отправки СМС
+    console.log(`Код подтверждения для ${cleanPhone}: ${code}`);
+    res.json({ success: true, message: 'Код отправлен' });
   } catch (error) {
     console.error('Error:', error);
-    res.status(500).json({ error: 'Ошибка сервера' });
+    res.status(500).json({ error: 'Ошибка при отправке кода' });
   }
 });
 
@@ -56,21 +57,24 @@ app.post('/api/auth/verify-code', async (req, res) => {
       where: { phone: cleanPhone }
     });
 
-    if (!user || user.verificationCode !== code) {
-      return res.status(400).json({ error: 'Неверный код' });
+    if (!user || user.verificationCode !== code || !user.verificationCodeExpires || user.verificationCodeExpires < new Date()) {
+      return res.status(400).json({ error: 'Неверный код или код истек' });
     }
 
-    const token = jwt.sign({ userId: user.id }, JWT_SECRET);
-    
+    const token = jwt.sign({ userId: user.id, role: user.role }, JWT_SECRET, { expiresIn: '7d' });
+
     await prisma.user.update({
-      where: { phone: cleanPhone },
-      data: { verificationCode: null }
+      where: { id: user.id },
+      data: { 
+        verificationCode: null,
+        verificationCodeExpires: null
+      }
     });
 
-    res.json({ token });
+    res.json({ token, user: { id: user.id, role: user.role } });
   } catch (error) {
     console.error('Error:', error);
-    res.status(500).json({ error: 'Ошибка сервера' });
+    res.status(500).json({ error: 'Ошибка при проверке кода' });
   }
 });
 

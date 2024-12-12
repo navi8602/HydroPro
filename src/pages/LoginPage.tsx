@@ -25,7 +25,6 @@ export function LoginPage() {
       const response = await fetch('/api/auth/send-code', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
         body: JSON.stringify({ phone: cleanPhone })
       });
 
