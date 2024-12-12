@@ -34,11 +34,32 @@ app.post('/api/auth/send-code', (req, res) => {
   res.json({ success: true, message: 'Code sent successfully' });
 });
 
-app.post('/api/auth/verify-code', (req, res) => {
+app.post('/api/auth/verify-code', async (req, res) => {
   const { phone, code } = req.body;
   // В реальном приложении здесь была бы проверка кода
   if (code === '1234') {
-    res.json({ success: true, token: 'test-token' });
+    try {
+      const { PrismaClient } = require('@prisma/client');
+      const prisma = new PrismaClient();
+      
+      const user = await prisma.user.upsert({
+        where: { phone },
+        update: {},
+        create: {
+          phone,
+          role: 'USER'
+        }
+      });
+      
+      res.json({ 
+        success: true, 
+        token: 'test-token',
+        userId: user.id 
+      });
+    } catch (error) {
+      console.error('Error creating user:', error);
+      res.status(500).json({ error: 'Error creating user' });
+    }
   } else {
     res.status(400).json({ error: 'Invalid code' });
   }
