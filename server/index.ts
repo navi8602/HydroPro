@@ -19,6 +19,9 @@ app.post('/api/auth/send-code', async (req, res) => {
       return res.status(400).json({ error: 'Требуется номер телефона' });
     }
 
+    // Добавляем задержку для симуляции отправки SMS
+    await new Promise(resolve => setTimeout(resolve, 1000));
+
     const cleanPhone = phone.replace(/\D/g, '');
     const code = Math.floor(1000 + Math.random() * 9000).toString();
     

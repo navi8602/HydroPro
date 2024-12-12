@@ -38,7 +38,7 @@ export function LoginPage() {
       }
     } catch (error) {
       console.error('Error sending code:', error);
-      setError('Сервер недоступен');
+      setError('Ошибка сервера. Попробуйте позже');
     } finally {
       setLoading(false);
     }
