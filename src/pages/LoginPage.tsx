@@ -78,10 +78,20 @@ export function LoginPage() {
         )}
         {step === 'phone' ? (
           <div className="space-y-4">
-            <IMaskInput
-              mask="+7 (000) 000-00-00"
+            <input
+              type="tel"
               value={phoneNumber}
-              onAccept={(value) => setPhoneNumber(value)}
+              onChange={(e) => {
+                const value = e.target.value.replace(/\D/g, '');
+                if (value.length <= 11) {
+                  const formatted = value
+                    .replace(/^(\d{1})/, '+7 ($1')
+                    .replace(/^(\+7 \(\d{3})/, '$1)')
+                    .replace(/(\)\d{3})/, '$1-')
+                    .replace(/(-\d{2})/, '$1-');
+                  setPhoneNumber(formatted);
+                }
+              }}
               placeholder="+7 (999) 999-99-99"
               className="w-full p-2 border rounded"
             />
