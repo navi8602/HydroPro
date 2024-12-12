@@ -67,6 +67,11 @@ app.post('/api/auth/verify-code', async (req, res) => {
   }
 });
 
+app.use((err: any, req: any, res: any, next: any) => {
+  console.error('Server error:', err);
+  res.status(500).json({ error: 'Внутренняя ошибка сервера' });
+});
+
 app.listen(3001, '0.0.0.0', () => {
   console.log('Server running on port 3001');
 });

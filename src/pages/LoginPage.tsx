@@ -45,7 +45,7 @@ export function LoginPage() {
 
   const handleVerifyCode = async () => {
     try {
-      const response = await fetch('http://localhost:3001/api/auth/verify-code', {
+      const response = await fetch('http://0.0.0.0:3001/api/auth/verify-code', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ phone: phoneNumber, code })
