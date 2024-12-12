@@ -1,6 +1,20 @@
 
 import { useState } from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { 
+  BrowserRouter, 
+  Routes, 
+  Route, 
+  Navigate,
+  UNSAFE_DataRouterContext,
+  UNSAFE_DataRouterStateContext 
+} from 'react-router-dom';
+import { startTransition } from 'react';
+
+// Enable v7 features
+UNSAFE_DataRouterContext.provider = {
+  ...UNSAFE_DataRouterContext.provider,
+  v7_startTransition: startTransition
+};
 import { Layout } from './components/layout/Layout';
 import { DashboardPage } from './pages/DashboardPage';
 import { SystemsPage } from './pages/SystemsPage';
