@@ -14,43 +14,32 @@ app.use(cors({
 }));
 app.use(express.json());
 
-const authenticateToken = (req: any, res: any, next: any) => {
-  const authHeader = req.headers['authorization'];
-  const token = authHeader && authHeader.split(' ')[1];
-
-  if (!token) {
-    return res.status(401).json({ error: 'Требуется авторизация' });
-  }
-
-  jwt.verify(token, JWT_SECRET, (err: any, user: any) => {
-    if (err) {
-      return res.status(403).json({ error: 'Недействительный токен' });
-    }
-    req.user = user;
-    next();
-  });
-};
+const generateCode = () => Math.floor(1000 + Math.random() * 9000).toString();
 
 app.post('/api/auth/send-code', async (req, res) => {
   try {
     const { phone } = req.body;
     if (!phone) {
-      return res.status(400).json({ error: 'Номер телефона обязателен' });
+      return res.status(400).json({ error: 'Требуется номер телефона' });
     }
 
     const cleanPhone = phone.replace(/\D/g, '');
-    const code = Math.floor(1000 + Math.random() * 9000).toString();
+    const code = generateCode();
     
+    // Create or update user with verification code
     await prisma.user.upsert({
       where: { phone: cleanPhone },
-      update: { code },
-      create: { phone: cleanPhone, code }
+      update: { verificationCode: code },
+      create: { 
+        phone: cleanPhone, 
+        verificationCode: code
+      }
     });
-    
-    console.log(`Код для ${cleanPhone}: ${code}`);
+
+    console.log(`Code for ${cleanPhone}: ${code}`); // For testing
     res.json({ success: true });
   } catch (error) {
-    console.error('Server error:', error);
+    console.error('Error:', error);
     res.status(500).json({ error: 'Ошибка сервера' });
   }
 });
@@ -63,21 +52,21 @@ app.post('/api/auth/verify-code', async (req, res) => {
     const user = await prisma.user.findUnique({
       where: { phone: cleanPhone }
     });
-    
-    if (!user || user.code !== code) {
+
+    if (!user || user.verificationCode !== code) {
       return res.status(400).json({ error: 'Неверный код' });
     }
-    
+
     const token = jwt.sign({ userId: user.id }, JWT_SECRET);
     
     await prisma.user.update({
       where: { phone: cleanPhone },
-      data: { code: null }
+      data: { verificationCode: null }
     });
-    
+
     res.json({ token });
   } catch (error) {
-    console.error('Server error:', error);
+    console.error('Error:', error);
     res.status(500).json({ error: 'Ошибка сервера' });
   }
 });

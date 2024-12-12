@@ -9,12 +9,12 @@ datasource db {
 }
 
 model User {
-  id        Int      @id @default(autoincrement())
-  phone     String   @unique
-  code      String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  systems   RentedSystem[]
+  id              Int      @id @default(autoincrement())
+  phone           String   @unique
+  verificationCode String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  systems         RentedSystem[]
 }
 
 model RentedSystem {
