@@ -113,6 +113,38 @@ const checkSystemPermission = async (req, res, next) => {
   }
 };
 
+// Управление пользователями
+app.get('/api/users', authenticateToken, async (req, res) => {
+  try {
+    const users = await prisma.user.findMany({
+      include: {
+        permissions: true
+      }
+    });
+    res.json(users);
+  } catch (error) {
+    console.error('Error:', error);
+    res.status(500).json({ error: 'Ошибка сервера' });
+  }
+});
+
+app.patch('/api/users/:id/role', authenticateToken, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { role } = req.body;
+    
+    const user = await prisma.user.update({
+      where: { id: parseInt(id) },
+      data: { role }
+    });
+    
+    res.json(user);
+  } catch (error) {
+    console.error('Error:', error);
+    res.status(500).json({ error: 'Ошибка сервера' });
+  }
+});
+
 // Системы
 app.post('/api/systems/rent', authenticateToken, async (req, res) => {
   try {

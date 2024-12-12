@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
-import { Home, Package, Sprout } from 'lucide-react';
+import { Home, Package, Sprout, User } from 'lucide-react'; // Added User icon import
 import { NotificationCenter } from '../notifications/NotificationCenter';
 
 export function Navigation() {
@@ -9,6 +9,7 @@ export function Navigation() {
     { name: 'Дашборд', href: '/', icon: Home },
     { name: 'Системы', href: '/systems', icon: Package },
     { name: 'Растения', href: '/plants', icon: Sprout },
+    { name: 'Пользователи', href: '/users', icon: User }, // Added users navigation item
   ];
 
   return (

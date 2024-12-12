@@ -99,6 +99,7 @@ function App() {
             <Route path="/dashboard" element={<DashboardPage rentedSystems={rentedSystems} />} />
             <Route path="/systems" element={<SystemsPage onRentSystem={handleRentSystem} />} />
             <Route path="/plants" element={<PlantsPage />} />
+            <Route path="/users" element={<UsersPage />} />
           </Route>
         </Routes>
       </BrowserRouter>
