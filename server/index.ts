@@ -1,4 +1,3 @@
-
 import express from 'express';
 import cors from 'cors';
 
@@ -53,14 +52,40 @@ app.post('/api/auth/verify-code', async (req, res) => {
         update: {},
         create: {
           phone,
-          role: 'USER'
+          role: 'USER',
+          rentedSystems: {
+            create: {
+              systemName: 'Базовая система',
+              capacity: 6,
+              rentalPeriod: 30,
+              startDate: new Date(),
+              endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+              plants: {
+                create: []
+              },
+              metrics: {
+                create: [
+                  {
+                    temperature: 23,
+                    humidity: 65,
+                    nutrientLevel: 500,
+                    phLevel: 6.5
+                  }
+                ]
+              }
+            }
+          }
+        },
+        include: {
+          rentedSystems: true
         }
       });
       
       res.json({ 
         success: true, 
-        token: 'test-token',
-        userId: user.id 
+        token: `auth_${user.id}`,
+        userId: user.id,
+        systems: user.rentedSystems
       });
     } catch (error) {
       console.error('Error creating user:', error);
