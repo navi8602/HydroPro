@@ -76,6 +76,29 @@ app.post("/api/auth/verify-code", async (req, res) => {
     res.status(500).json({ error: 'Failed to verify code' });
   }
 });
+
+app.get("/api/users", async (req, res) => {
+  try {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    const result = await pool.query(
+      `SELECT u.id, u.phone, u.role, u."createdAt" as "registeredAt",
+      (SELECT json_agg(json_build_object(
+        'systemId', rs."systemId",
+        'accessLevel', rs.status
+      )) FROM "RentedSystem" rs WHERE rs."userId" = u.id) as permissions
+      FROM "User" u`
+    );
+    
+    res.json(result.rows);
+  } catch (error) {
+    console.error('Error fetching users:', error);
+    res.status(500).json({ error: 'Failed to fetch users' });
+  }
+});
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
 });
