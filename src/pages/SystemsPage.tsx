@@ -35,10 +35,17 @@ export function SystemsPage() {
 
       navigate('/dashboard');
     } catch (error) {
-      console.error('Error renting system:', error);
+      console.error('Error renting system:', {
+        error,
+        requestBody: { systemId, months },
+        token: localStorage.getItem('token'),
+        responseStatus: error.response?.status,
+        responseData: error.response?.data,
+        stack: error.stack
+      });
       addNotification({
         title: 'Ошибка',
-        message: 'Не удалось арендовать систему',
+        message: `Не удалось арендовать систему: ${error.message || 'Неизвестная ошибка'}`,
         type: 'error'
       });
     }
