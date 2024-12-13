@@ -16,6 +16,7 @@ export function Navigation() {
     { name: 'Системы', href: '/systems', icon: Package },
     { name: 'Растения', href: '/plants', icon: Sprout },
     { name: 'Пользователи', href: '/users', icon: User },
+    { name: 'Профиль', href: '/profile', icon: UserCircle },
   ];
 
   return (

@@ -1,4 +1,3 @@
-
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { NotificationProvider } from './contexts/NotificationContext';
 import { Layout } from './components/layout/Layout';
@@ -7,6 +6,7 @@ import { DashboardPage } from './pages/DashboardPage';
 import { SystemsPage } from './pages/SystemsPage';
 import { PlantsPage } from './pages/PlantsPage';
 import { UsersPage } from './pages/UsersPage';
+import { ProfilePage } from './pages/ProfilePage';
 import { useState, useEffect } from 'react';
 import { RentedSystem } from './types/system';
 
@@ -94,6 +94,7 @@ export default function App() {
             <Route path="/systems" element={<SystemsPage onRentSystem={handleRentSystem} />} />
             <Route path="/plants" element={<PlantsPage />} />
             <Route path="/users" element={<UsersPage />} />
+            <Route path="/profile" element={<ProfilePage />} /> {/* Added ProfilePage route */}
           </Route>
           <Route path="/" element={<Navigate to="/dashboard" replace />} />
         </Routes>
