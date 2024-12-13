@@ -80,7 +80,7 @@ const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
 });
 
-const port = 3002;
+const port = 3003;
 
 app.get("/api/systems", async (req, res) => {
   try {
