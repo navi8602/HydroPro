@@ -112,9 +112,20 @@ app.get("/api/systems/user", async (req, res) => {
     );
     
     const systems = result.rows.map(row => ({
-      ...row,
-      plants: row.plants || [],
-      capacity: 6 // Добавляем стандартную вместимость
+      id: row.systemid,
+      name: row.name,
+      type: row.type,
+      description: row.description,
+      image: row.image,
+      price: row.price,
+      capacity: 6,
+      plants: Array.isArray(row.plants) ? row.plants.map(plant => ({
+        ...plant,
+        status: plant.status || 'healthy'
+      })) : [],
+      status: row.status,
+      startDate: row.startdate,
+      endDate: row.enddate
     }));
     
     res.json(systems);

@@ -65,7 +65,8 @@ export default function App() {
         throw new Error('Failed to fetch systems');
       }
       const data = await response.json();
-      setRentedSystems(data);
+      console.log('Fetched systems:', data);
+      setRentedSystems(data || []);
     } catch (error) {
       console.error('Error fetching user systems:', error);
     }
