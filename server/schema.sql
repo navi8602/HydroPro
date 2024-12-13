@@ -37,14 +37,17 @@ CREATE TABLE "RentedSystem" (
 -- Insert test rented systems for users
 INSERT INTO "RentedSystem" ("systemId", "userId", "startDate", "endDate", "status")
 SELECT 
-  'system1', -- используем фиксированный systemId для примера
-  "User".id,
-  CURRENT_TIMESTAMP,
-  CURRENT_TIMESTAMP + INTERVAL '6 months',
-  'ACTIVE'
-FROM "User"
+  s.id as "systemId",
+  u.id as "userId",
+  CURRENT_TIMESTAMP as "startDate",
+  CURRENT_TIMESTAMP + INTERVAL '6 months' as "endDate",
+  'ACTIVE' as status
+FROM "User" u
+CROSS JOIN (
+  SELECT id FROM "System" ORDER BY RANDOM() LIMIT 1
+) s
 WHERE NOT EXISTS (
   SELECT 1 
   FROM "RentedSystem" 
-  WHERE "RentedSystem"."userId" = "User".id
+  WHERE "RentedSystem"."userId" = u.id
 );
