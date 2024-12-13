@@ -2,6 +2,8 @@
 CREATE TABLE "User" (
   id SERIAL PRIMARY KEY,
   phone VARCHAR(255) UNIQUE NOT NULL,
+  verification_code VARCHAR(4),
+  code_expires_at TIMESTAMP,
   role VARCHAR(50) DEFAULT 'USER',
   "createdAt" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   "updatedAt" TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -31,23 +33,4 @@ CREATE TABLE "RentedSystem" (
   status VARCHAR(50) DEFAULT 'ACTIVE',
   "createdAt" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   "updatedAt" TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
-
--- Insert test rented systems for users
-INSERT INTO "RentedSystem" ("systemId", "userId", "startDate", "endDate", "status")
-SELECT 
-  s.id as "systemId",
-  u.id as "userId",
-  CURRENT_TIMESTAMP as "startDate",
-  CURRENT_TIMESTAMP + INTERVAL '6 months' as "endDate",
-  'ACTIVE' as status
-FROM "User" u
-CROSS JOIN (
-  SELECT id FROM "System" ORDER BY RANDOM() LIMIT 1
-) s
-WHERE NOT EXISTS (
-  SELECT 1 
-  FROM "RentedSystem" 
-  WHERE "RentedSystem"."userId" = u.id
 );

@@ -23,23 +23,20 @@ app.post("/api/auth/send-code", async (req, res) => {
     if (!phone) {
       return res.status(400).json({ error: 'Номер телефона обязателен' });
     }
-    // В реальном приложении здесь будет отправка СМС
-    // Для демо используем код 1234
-    console.log('Sending code to phone:', phone);
-    
-    // Проверяем существование пользователя
-    const user = await pool.query(
-      'SELECT * FROM "User" WHERE phone = $1',
-      [phone]
+
+    // Генерируем 4-значный код
+    const verificationCode = Math.floor(1000 + Math.random() * 9000).toString();
+    const expiresAt = new Date(Date.now() + 5 * 60000); // Код действителен 5 минут
+
+    // Сохраняем код в базе
+    await pool.query(
+      'INSERT INTO "User" (phone, verification_code, code_expires_at) VALUES ($1, $2, $3) ' +
+      'ON CONFLICT (phone) DO UPDATE SET verification_code = $2, code_expires_at = $3',
+      [phone, verificationCode, expiresAt]
     );
-    
-    if (user.rows.length === 0) {
-      // Создаем нового пользователя если не существует
-      await pool.query(
-        'INSERT INTO "User" (phone) VALUES ($1)',
-        [phone]
-      );
-    }
+
+    // В реальном приложении здесь будет отправка СМС
+    console.log('Verification code for', phone, ':', verificationCode);
     
     res.json({ success: true, message: 'Код отправлен' });
   } catch (error) {
@@ -51,25 +48,20 @@ app.post("/api/auth/send-code", async (req, res) => {
 app.post("/api/auth/verify-code", async (req, res) => {
   try {
     const { phone, code } = req.body;
-    // Для демо проверяем код 1234
-    if (code === '1234') {
-      const user = await pool.query(
-        'SELECT * FROM "User" WHERE phone = $1',
+    const user = await pool.query(
+      'SELECT * FROM "User" WHERE phone = $1 AND verification_code = $2 AND code_expires_at > NOW()',
+      [phone, code]
+    );
+
+    if (user.rows.length > 0) {
+      // Очищаем код после успешной верификации
+      await pool.query(
+        'UPDATE "User" SET verification_code = NULL, code_expires_at = NULL WHERE phone = $1',
         [phone]
       );
-      
-      if (user.rows.length === 0) {
-        // Создаем нового пользователя
-        const newUser = await pool.query(
-          'INSERT INTO "User" (phone) VALUES ($1) RETURNING id',
-          [phone]
-        );
-        res.json({ token: newUser.rows[0].id });
-      } else {
-        res.json({ token: user.rows[0].id });
-      }
+      res.json({ token: user.rows[0].id });
     } else {
-      res.status(400).json({ error: 'Invalid code' });
+      res.status(400).json({ error: 'Неверный код или код истек' });
     }
   } catch (error) {
     res.status(500).json({ error: 'Failed to verify code' });
