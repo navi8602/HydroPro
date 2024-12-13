@@ -101,12 +101,23 @@ app.get("/api/systems/user", async (req, res) => {
     const userId = parseInt(authHeader.split(' ')[1]);
     
     const result = await pool.query(
-      `SELECT s.*, rs.* FROM "System" s 
+      `SELECT s.*, rs.*, 
+       (SELECT json_agg(p.*) 
+        FROM "Plant" p 
+        WHERE p."systemId" = s.id) as plants
+       FROM "System" s 
        JOIN "RentedSystem" rs ON s.id = rs."systemId" 
        WHERE rs."userId" = $1 AND rs.status = 'ACTIVE'`,
       [userId]
     );
-    res.json(result.rows);
+    
+    const systems = result.rows.map(row => ({
+      ...row,
+      plants: row.plants || [],
+      capacity: 6 // Добавляем стандартную вместимость
+    }));
+    
+    res.json(systems);
   } catch (error) {
     console.error('Error fetching user systems:', error);
     res.status(500).json({ error: 'Failed to fetch user systems' });
