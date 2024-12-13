@@ -16,6 +16,46 @@ app.use(cors({
 app.use(express.json());
 
 const prisma = new PrismaClient();
+
+// Аутентификация
+app.post("/api/auth/send-code", async (req, res) => {
+  try {
+    const { phone } = req.body;
+    // В реальном приложении здесь будет отправка СМС
+    // Для демо используем код 1234
+    res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to send code' });
+  }
+});
+
+app.post("/api/auth/verify-code", async (req, res) => {
+  try {
+    const { phone, code } = req.body;
+    // Для демо проверяем код 1234
+    if (code === '1234') {
+      const user = await pool.query(
+        'SELECT * FROM "User" WHERE phone = $1',
+        [phone]
+      );
+      
+      if (user.rows.length === 0) {
+        // Создаем нового пользователя
+        const newUser = await pool.query(
+          'INSERT INTO "User" (phone) VALUES ($1) RETURNING id',
+          [phone]
+        );
+        res.json({ token: newUser.rows[0].id });
+      } else {
+        res.json({ token: user.rows[0].id });
+      }
+    } else {
+      res.status(400).json({ error: 'Invalid code' });
+    }
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to verify code' });
+  }
+});
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
 });
