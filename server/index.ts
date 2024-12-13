@@ -25,15 +25,19 @@ app.use(express.json());
 app.patch("/api/users/role", async (req, res) => {
   try {
     const { phone, role } = req.body;
+    console.log('Updating user role:', { phone, role });
+    
     const result = await pool.query(
-      'UPDATE "User" SET role = $1 WHERE phone = $2 RETURNING *',
-      [role, phone]
+      'UPDATE "User" SET role = $1, "updatedAt" = CURRENT_TIMESTAMP WHERE phone = $2 RETURNING *',
+      [role.toUpperCase(), phone]
     );
     
     if (result.rows.length === 0) {
+      console.log('User not found:', phone);
       return res.status(404).json({ error: "User not found" });
     }
     
+    console.log('User updated:', result.rows[0]);
     res.json(result.rows[0]);
   } catch (error) {
     console.error("Error updating user role:", error);
