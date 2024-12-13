@@ -5,9 +5,9 @@
   "type": "module",
   "scripts": {
     "frontend": "vite",
-    "backend": "node --loader ts-node/esm server/index.ts",
+    "backend": "npx ts-node server/index.ts",
     "dev": "concurrently \"npm run frontend\" \"npm run backend\"",
-    "start": "node --loader ./custom-loader.js server/index.ts & vite",
+    "start": "npm run dev",
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview"

@@ -3,24 +3,22 @@ import express from 'express';
 import cors from 'cors';
 import { PrismaClient } from '@prisma/client';
 
-const prisma = new PrismaClient();
 const app = express();
+const prisma = new PrismaClient();
 
+// Middleware
 app.use(cors());
 app.use(express.json());
 
-app.get('/', (_req, res) => {
-  res.json({ status: 'ok' });
-});
-
+// Auth routes
 app.post('/api/auth/send-code', (req, res) => {
   const { phone } = req.body;
-  res.json({ success: true, message: 'Code sent' });
+  // В реальном приложении здесь будет отправка SMS
+  res.json({ success: true });
 });
 
 app.post('/api/auth/verify-code', async (req, res) => {
-  const { phone, code } = req.body;
-  
+  const { phone } = req.body;
   try {
     const user = await prisma.user.upsert({
       where: { phone },
@@ -29,7 +27,17 @@ app.post('/api/auth/verify-code', async (req, res) => {
     });
     res.json({ success: true, user });
   } catch (error) {
-    res.status(500).json({ success: false, error: 'Server error' });
+    res.status(500).json({ success: false });
+  }
+});
+
+// Systems routes
+app.get('/api/systems', async (req, res) => {
+  try {
+    const systems = await prisma.rentedSystem.findMany();
+    res.json(systems);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch systems' });
   }
 });
 
