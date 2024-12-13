@@ -92,10 +92,12 @@ app.get("/api/user/systems", async (req, res) => {
     
     // Get systems with user phone directly
     const result = await pool.query(
-      `SELECT s.* FROM "System" s
+      `SELECT s.*, rs.status, rs."startDate", rs."endDate" 
+       FROM "System" s
        JOIN "RentedSystem" rs ON rs."systemId" = s.id
        JOIN "User" u ON rs."userId" = u.id
-       WHERE u.phone = $1 AND rs.status = 'ACTIVE'`,
+       WHERE u.phone = $1 AND rs.status = 'ACTIVE'
+       AND rs."endDate" > CURRENT_TIMESTAMP`,
       [phone]
     );
     res.json(result.rows);
