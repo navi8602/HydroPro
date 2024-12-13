@@ -1,15 +1,21 @@
-import { Link, useLocation } from 'react-router-dom';
-import { Home, Package, Sprout, User } from 'lucide-react'; // Added User icon import
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Home, Package, Sprout, User, LogOut } from 'lucide-react';
 import { NotificationCenter } from '../notifications/NotificationCenter';
 
 export function Navigation() {
   const location = useLocation();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    navigate('/login');
+  };
 
   const navigation = [
-    { name: 'Дашборд', href: '/', icon: Home },
+    { name: 'Дашборд', href: '/dashboard', icon: Home },
     { name: 'Системы', href: '/systems', icon: Package },
     { name: 'Растения', href: '/plants', icon: Sprout },
-    { name: 'Пользователи', href: '/users', icon: User }, // Added users navigation item
+    { name: 'Пользователи', href: '/users', icon: User },
   ];
 
   return (
@@ -43,8 +49,15 @@ export function Navigation() {
             </nav>
           </div>
 
-          <div className="flex items-center">
+          <div className="flex items-center space-x-4">
             <NotificationCenter />
+            <button
+              onClick={handleLogout}
+              className="flex items-center px-3 py-2 text-sm font-medium text-gray-500 hover:text-gray-700 hover:bg-gray-50 rounded-md"
+            >
+              <LogOut className="h-4 w-4 mr-2" />
+              Выйти
+            </button>
           </div>
         </div>
       </div>
