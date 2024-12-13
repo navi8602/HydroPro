@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "frontend": "vite",
-    "backend": "ts-node --esm server/index.ts",
+    "backend": "ts-node server/index.ts",
     "dev": "concurrently \"npm run frontend\" \"npm run backend\"",
     "start": "npm run dev",
     "build": "vite build",
