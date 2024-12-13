@@ -1,9 +1,11 @@
-
 import express from "express";
 import cors from "cors";
 import pkg from 'pg';
 const { Pool } = pkg;
 import getPort from "get-port";
+import jwt from 'jsonwebtoken'; // Import JWT library
+
+const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key'; // Define JWT secret
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL
@@ -49,10 +51,16 @@ app.post("/api/auth/verify-code", async (req, res) => {
     );
     
     if (result.rows.length > 0) {
+      const user = result.rows[0];
+      const token = jwt.sign(
+        { id: user.id, role: user.role },
+        JWT_SECRET,
+        { expiresIn: '24h' }
+      );
       res.json({ 
         success: true, 
-        user: result.rows[0],
-        token: 'temp-token'
+        user: user,
+        token: token 
       });
     } else {
       res.status(400).json({ success: false, error: 'Failed to create user' });
