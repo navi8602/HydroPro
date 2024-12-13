@@ -5,9 +5,6 @@ import {
   Route,
   future
 } from 'react-router-dom';
-
-future.v7_startTransition = true;
-future.v7_relativeSplatPath = true;
 import { Layout } from './components/layout/Layout';
 import { DashboardPage } from './pages/DashboardPage';
 import { SystemsPage } from './pages/SystemsPage';
@@ -17,6 +14,10 @@ import { useEffect, useState } from 'react';
 import { RentedSystem } from './types/system';
 import { getAuthToken } from './utils/auth';
 
+// Configure future flags
+future.v7_startTransition = true;
+future.v7_relativeSplatPath = true;
+
 export default function App() {
   const [rentedSystems, setRentedSystems] = useState<RentedSystem[]>([]);
 
@@ -24,6 +25,8 @@ export default function App() {
     const fetchSystems = async () => {
       try {
         const token = getAuthToken();
+        if (!token) return;
+        
         const response = await fetch('/api/systems/user', {
           headers: {
             'Authorization': `Bearer ${token}`
