@@ -27,6 +27,21 @@ app.post("/api/auth/send-code", async (req, res) => {
     // В реальном приложении здесь будет отправка СМС
     // Для демо используем код 1234
     console.log('Sending code to phone:', phone);
+    
+    // Проверяем существование пользователя
+    const user = await pool.query(
+      'SELECT * FROM "User" WHERE phone = $1',
+      [phone]
+    );
+    
+    if (user.rows.length === 0) {
+      // Создаем нового пользователя если не существует
+      await pool.query(
+        'INSERT INTO "User" (phone) VALUES ($1)',
+        [phone]
+      );
+    }
+    
     res.json({ success: true, message: 'Код отправлен' });
   } catch (error) {
     console.error('Error in send-code:', error);
