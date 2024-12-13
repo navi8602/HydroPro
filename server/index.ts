@@ -1,7 +1,8 @@
 
 import express from "express";
 import cors from "cors";
-import { Pool } from 'pg';
+import pkg from 'pg';
+const { Pool } = pkg;
 import getPort from "get-port";
 
 const pool = new Pool({
