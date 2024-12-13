@@ -33,17 +33,27 @@ app.get("/api/test", (req, res) => {
 // Get user's rented systems
 app.get("/api/user/systems", async (req, res) => {
   try {
-    const phone = req.headers.authorization?.split(' ')[1];
+    const phone = req.headers.authorization;
+    console.log('Received phone:', phone);
+    
+    if (!phone) {
+      console.log('No phone provided');
+      return res.status(401).json({ error: 'No authorization provided' });
+    }
+
     const userResult = await pool.query(
       'SELECT id FROM "User" WHERE phone = $1',
       [phone]
     );
     
     if (userResult.rows.length === 0) {
+      console.log('User not found for phone:', phone);
       return res.json([]);
     }
 
     const userId = userResult.rows[0].id;
+    console.log('Found user:', userId);
+    
     const result = await pool.query(
       `SELECT s.*, rs.status, rs."startDate", rs."endDate" 
        FROM "System" s
@@ -51,6 +61,8 @@ app.get("/api/user/systems", async (req, res) => {
        WHERE rs."userId" = $1 AND rs.status = 'ACTIVE'`,
       [userId]
     );
+    
+    console.log('Found systems:', result.rows);
     res.json(result.rows);
   } catch (error) {
     console.error("Error fetching user systems:", error);

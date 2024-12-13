@@ -33,7 +33,7 @@ function App() {
       try {
         const response = await fetch('/api/user/systems', {
           headers: {
-            'Authorization': `Bearer ${localStorage.getItem('phone')}`
+            'Authorization': `${localStorage.getItem('phone')}`
           }
         });
         const data = await response.json();
