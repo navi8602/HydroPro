@@ -85,7 +85,8 @@ function App() {
       console.error('Error renting system:', {
         error: errorDetails,
         systemId,
-        months
+        months,
+        response: await response.text() // Log raw response for debugging
       });
     }
   };

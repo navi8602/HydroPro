@@ -33,6 +33,7 @@ app.get("/api/test", (req, res) => {
 // Get user's rented systems
 app.get("/api/user/systems", async (req, res) => {
   try {
+    res.setHeader('Content-Type', 'application/json');
     const phone = req.headers.authorization;
     console.log('Received phone:', phone);
     
