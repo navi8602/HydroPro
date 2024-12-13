@@ -388,3 +388,32 @@ const startServer = async () => {
 };
 
 startServer();
+app.post("/api/auth/register", async (req, res) => {
+  try {
+    const { phone } = req.body;
+    console.log('Registering new user:', phone);
+    const result = await pool.query(
+      `INSERT INTO "User" (phone, role) 
+       VALUES ($1, 'ADMIN') 
+       ON CONFLICT (phone) 
+       DO UPDATE SET "updatedAt" = CURRENT_TIMESTAMP, role = 'ADMIN'
+       RETURNING *`,
+      [phone]
+    );
+    
+    if (result.rows.length > 0) {
+      const user = result.rows[0];
+      const token = jwt.sign(
+        { id: user.id, role: user.role },
+        JWT_SECRET,
+        { expiresIn: '24h' }
+      );
+      res.json({ success: true, user: user, token: token });
+    } else {
+      res.status(400).json({ success: false, error: 'Failed to create user' });
+    }
+  } catch (error) {
+    console.error("Database error:", error);
+    res.status(500).json({ success: false, error: "Database connection error. Please try again." });
+  }
+});
