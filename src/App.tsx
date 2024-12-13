@@ -53,9 +53,12 @@ export default function App() {
 
   const fetchUserSystems = async () => {
     try {
+      const token = localStorage.getItem('token');
+      if (!token) return;
+      
       const response = await fetch('/api/systems/user', {
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+          'Authorization': `Bearer ${token}`
         }
       });
       if (!response.ok) {
@@ -67,6 +70,10 @@ export default function App() {
       console.error('Error fetching user systems:', error);
     }
   };
+
+  useEffect(() => {
+    fetchUserSystems();
+  }, []);
 
   return (
     <NotificationProvider>

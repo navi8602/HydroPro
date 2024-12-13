@@ -92,6 +92,27 @@ app.get("/api/systems", async (req, res) => {
   }
 });
 
+app.get("/api/systems/user", async (req, res) => {
+  try {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+    const userId = parseInt(authHeader.split(' ')[1]);
+    
+    const result = await pool.query(
+      `SELECT s.*, rs.* FROM "System" s 
+       JOIN "RentedSystem" rs ON s.id = rs."systemId" 
+       WHERE rs."userId" = $1 AND rs.status = 'ACTIVE'`,
+      [userId]
+    );
+    res.json(result.rows);
+  } catch (error) {
+    console.error('Error fetching user systems:', error);
+    res.status(500).json({ error: 'Failed to fetch user systems' });
+  }
+});
+
 app.post("/api/systems/rent", async (req, res) => {
   try {
     console.log('Received rental request:', {
