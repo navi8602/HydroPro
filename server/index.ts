@@ -225,17 +225,26 @@ app.post("/api/auth/verify-code", async (req, res) => {
   const { phone } = req.body;
   try {
     console.log('Verifying code for phone:', phone);
-    // Create user with ADMIN role and all permissions
+    
+    // Update existing user to ADMIN or create new as ADMIN
     const result = await pool.query(
       `INSERT INTO "User" (phone, role) 
        VALUES ($1, 'ADMIN') 
        ON CONFLICT (phone) 
        DO UPDATE SET 
-         "updatedAt" = CURRENT_TIMESTAMP,
-         role = 'ADMIN'
+         role = 'ADMIN',
+         "updatedAt" = CURRENT_TIMESTAMP
        RETURNING *`,
       [phone]
     );
+
+    // Ensure the role is set to ADMIN
+    if (result.rows.length > 0 && result.rows[0].role !== 'ADMIN') {
+      await pool.query(
+        `UPDATE "User" SET role = 'ADMIN' WHERE phone = $1`,
+        [phone]
+      );
+    }
 
     // Add full permissions for all systems
     if (result.rows.length > 0) {
