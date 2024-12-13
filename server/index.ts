@@ -6,8 +6,19 @@ import { PrismaClient } from '@prisma/client';
 const app = express();
 const prisma = new PrismaClient();
 
-app.use(cors());
+// Middleware
+app.use(cors({
+  origin: '*',
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
+
 app.use(express.json());
+
+// Test route
+app.get('/api/test', (req, res) => {
+  res.json({ message: 'Server is working!' });
+});
 
 // Auth routes
 app.post('/api/auth/send-code', (req, res) => {
@@ -38,6 +49,8 @@ app.get('/api/systems', async (req, res) => {
   }
 });
 
-app.listen(3003, '0.0.0.0', () => {
-  console.log('Server running on http://0.0.0.0:3003');
+const PORT = process.env.PORT || 3003;
+
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`Server running on http://0.0.0.0:${PORT}`);
 });
