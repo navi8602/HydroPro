@@ -314,18 +314,24 @@ app.get("/api/systems", async (req, res) => {
 // Get user's rented systems
 app.get("/api/user/systems", async (req, res) => {
   try {
-    const phone = req.headers.authorization?.split(' ')[1]; // Get phone from token
+    const phone = req.headers.authorization;
     
-    // Get systems with user phone directly
+    if (!phone) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+
+    console.log('Fetching systems for phone:', phone);
+
     const result = await pool.query(
       `SELECT s.*, rs.status, rs."startDate", rs."endDate" 
        FROM "System" s
        JOIN "RentedSystem" rs ON rs."systemId" = s.id
        JOIN "User" u ON rs."userId" = u.id
-       WHERE u.phone = $1 AND rs.status = 'ACTIVE'
-       AND rs."endDate" > CURRENT_TIMESTAMP`,
+       WHERE u.phone = $1 AND rs.status = 'ACTIVE'`,
       [phone]
     );
+
+    console.log('Found systems:', result.rows);
     res.json(result.rows);
   } catch (error) {
     console.error("Error fetching user systems:", error);
