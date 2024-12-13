@@ -1,0 +1,87 @@
+openapi: 3.0.0
+info:
+  title: HydroPro API
+  version: 1.0.0
+  description: API для управления гидропонными системами
+
+servers:
+  - url: http://localhost:5000/api
+    description: Development server
+
+paths:
+  /auth/send-code:
+    post:
+      summary: Отправка SMS кода
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                phone:
+                  type: string
+      responses:
+        '200':
+          description: Код отправлен
+        '400':
+          description: Ошибка валидации
+
+  /systems:
+    get:
+      summary: Получение списка систем
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Список систем
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/System'
+
+components:
+  schemas:
+    System:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        type:
+          type: string
+        capacity:
+          type: number
+        metrics:
+          type: object
+          properties:
+            temperature:
+              type: number
+            humidity:
+              type: number
+            phLevel:
+              type: number
+            nutrientLevel:
+              type: number
+
+    Plant:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        position:
+          type: number
+        status:
+          type: string
+          enum: [healthy, warning, critical]
+
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

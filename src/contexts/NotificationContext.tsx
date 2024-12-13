@@ -1,91 +1,49 @@
-import { createContext, useContext, useReducer, ReactNode } from 'react';
+import { createContext, useContext, useReducer, useEffect, ReactNode } from 'react';
+import { WsClient } from '../api/wsClient';
+import { NotificationsService } from '../api/services/notifications.service';
+import type { Notification } from '../types/notification';
 
-export interface Notification {
-  id: string;
-  title: string;
-  message: string;
-  type: 'info' | 'success' | 'warning' | 'error';
-  timestamp: string;
-  systemId?: string;
-  plantId?: string;
-  read: boolean;
-  actionLabel?: string;
-  onAction?: () => void;
-}
-
-interface NotificationState {
-  notifications: Notification[];
-}
-
-type NotificationAction =
-  | { type: 'ADD_NOTIFICATION'; payload: Omit<Notification, 'id' | 'timestamp' | 'read'> }
-  | { type: 'MARK_AS_READ'; payload: string }
-  | { type: 'REMOVE_NOTIFICATION'; payload: string }
-  | { type: 'CLEAR_ALL' };
-
-const initialState: NotificationState = {
-  notifications: []
-};
-
-const notificationReducer = (
-  state: NotificationState,
-  action: NotificationAction
-): NotificationState => {
-  switch (action.type) {
-    case 'ADD_NOTIFICATION':
-      return {
-        ...state,
-        notifications: [
-          {
-            ...action.payload,
-            id: crypto.randomUUID(),
-            timestamp: new Date().toISOString(),
-            read: false
-          },
-          ...state.notifications
-        ]
-      };
-    case 'MARK_AS_READ':
-      return {
-        ...state,
-        notifications: state.notifications.map(notification =>
-          notification.id === action.payload
-            ? { ...notification, read: true }
-            : notification
-        )
-      };
-    case 'REMOVE_NOTIFICATION':
-      return {
-        ...state,
-        notifications: state.notifications.filter(
-          notification => notification.id !== action.payload
-        )
-      };
-    case 'CLEAR_ALL':
-      return {
-        ...state,
-        notifications: []
-      };
-    default:
-      return state;
-  }
-};
-
-interface NotificationContextValue {
-  notifications: Notification[];
-  addNotification: (notification: Omit<Notification, 'id' | 'timestamp' | 'read'>) => void;
-  markAsRead: (id: string) => void;
-  removeNotification: (id: string) => void;
-  clearAll: () => void;
-}
 
 const NotificationContext = createContext<NotificationContextValue | undefined>(undefined);
 
 export function NotificationProvider({ children }: { children: ReactNode }) {
   const [state, dispatch] = useReducer(notificationReducer, initialState);
 
+  useEffect(() => {
+    // Подключение к WebSocket
+    const socket = WsClient.connect();
+
+    socket.on('notification:new', (notification: Notification) => {
+      dispatch({ type: 'ADD_NOTIFICATION', payload: notification });
+    });
+
+    socket.on('notification:read', (notificationId: string) => {
+      dispatch({ type: 'MARK_AS_READ', payload: notificationId });
+    });
+
+    // Загрузка существующих уведомлений
+    const fetchNotifications = async () => {
+      try {
+        const { data } = await NotificationsService.getNotifications();
+        data.forEach(notification =>
+            dispatch({ type: 'ADD_NOTIFICATION', payload: notification })
+        );
+      } catch (error) {
+        console.error('Error fetching notifications:', error);
+      }
+    };
+
+    fetchNotifications();
+
+    // Очищаем слушатели при размонтировании
+    return () => {
+      socket.off('notification:new');
+      socket.off('notification:read');
+    };
+  }, []);
+
   const addNotification = (
-    notification: Omit<Notification, 'id' | 'timestamp' | 'read'>
+      notification: Omit<Notification, 'id' | 'timestamp' | 'read'>
   ) => {
     dispatch({ type: 'ADD_NOTIFICATION', payload: notification });
   };
@@ -103,17 +61,17 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <NotificationContext.Provider
-      value={{
-        notifications: state.notifications,
-        addNotification,
-        markAsRead,
-        removeNotification,
-        clearAll
-      }}
-    >
-      {children}
-    </NotificationContext.Provider>
+      <NotificationContext.Provider
+          value={{
+            notifications: state.notifications,
+            addNotification,
+            markAsRead,
+            removeNotification,
+            clearAll
+          }}
+      >
+        {children}
+      </NotificationContext.Provider>
   );
 }
 

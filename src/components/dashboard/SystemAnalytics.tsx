@@ -1,116 +1,151 @@
-import { Card } from '../ui/Card';
+// src/components/dashboard/SystemAnalytics.tsx
+import { useEffect, useState } from 'react';
+import { AnalyticsService } from '../../api/services/analytics.service';
 import { Line } from 'react-chartjs-2';
-import { TrendingUp, TrendingDown, AlertTriangle } from 'lucide-react';
-import { formatDate } from '../../utils/date';
-
-interface AnalyticsData {
-  labels: string[];
-  datasets: {
-    label: string;
-    data: number[];
-    borderColor: string;
-    backgroundColor: string;
-  }[];
-}
+import type { SystemAnalytics as SystemAnalyticsType } from '../../types/analytics';
 
 interface SystemAnalyticsProps {
-  data: AnalyticsData;
-  predictions: {
-    nextHarvest: string;
-    expectedYield: number;
-    potentialIssues: string[];
-  };
+  systemId: string;
+  timeRange: '24h' | '7d' | '30d';
 }
 
-export function SystemAnalytics({ data, predictions }: SystemAnalyticsProps) {
+export function SystemAnalytics({ systemId, timeRange }: SystemAnalyticsProps) {
+  const [analytics, setAnalytics] = useState<SystemAnalyticsType | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchAnalytics = async () => {
+      try {
+        const response = await AnalyticsService.getSystemAnalytics(systemId, timeRange);
+        setAnalytics(response.data);
+      } catch (error) {
+        console.error('Failed to fetch analytics:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchAnalytics();
+  }, [systemId, timeRange]);
+
+  if (loading) return <AnalyticsLoader />;
+  if (!analytics) return null;
+
+  const chartData = {
+    labels: analytics.timePoints,
+    datasets: [
+      {
+        label: 'Температура (°C)',
+        data: analytics.temperature,
+        borderColor: 'rgb(239, 68, 68)',
+        tension: 0.1
+      },
+      {
+        label: 'Влажность (%)',
+        data: analytics.humidity,
+        borderColor: 'rgb(59, 130, 246)',
+        tension: 0.1
+      },
+      {
+        label: 'pH',
+        data: analytics.ph,
+        borderColor: 'rgb(16, 185, 129)',
+        tension: 0.1
+      }
+    ]
+  };
+
   return (
-    <div className="space-y-6">
-      <Card>
-        <div className="flex justify-between items-center mb-4">
-          <h3 className="text-lg font-medium">Аналитика системы</h3>
-          <select className="text-sm border-gray-300 rounded-md">
-            <option value="7">За неделю</option>
-            <option value="30">За месяц</option>
-            <option value="90">За 3 месяца</option>
-          </select>
+      <div className="space-y-6">
+        <div className="bg-white p-6 rounded-lg border border-gray-200">
+          <h3 className="text-lg font-medium mb-4">Аналитика системы</h3>
+          <div className="h-80">
+            <Line
+                data={chartData}
+                options={{
+                  responsive: true,
+                  maintainAspectRatio: false,
+                  interaction: {
+                    mode: 'index',
+                    intersect: false,
+                  },
+                  scales: {
+                    y: {
+                      beginAtZero: true
+                    }
+                  }
+                }}
+            />
+          </div>
         </div>
-        <div className="h-64">
-          <Line
-            data={data}
-            options={{
-              responsive: true,
-              maintainAspectRatio: false,
-              plugins: {
-                legend: {
-                  position: 'bottom'
-                }
-              }
-            }}
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <MetricSummary
+              label="Эффективность"
+              value={`${analytics.efficiency}%`}
+              trend={analytics.efficiencyTrend}
+              icon="📈"
+          />
+          <MetricSummary
+              label="Расход воды"
+              value={`${analytics.waterUsage}л/день`}
+              trend={analytics.waterUsageTrend}
+              icon="💧"
+          />
+          <MetricSummary
+              label="Энергопотребление"
+              value={`${analytics.powerUsage}кВт/ч`}
+              trend={analytics.powerUsageTrend}
+              icon="⚡"
           />
         </div>
-      </Card>
+      </div>
+  );
+}
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card>
-          <div className="flex items-start space-x-3">
-            <div className="p-2 bg-green-100 rounded-lg">
-              <TrendingUp className="h-5 w-5 text-green-600" />
-            </div>
-            <div>
-              <h4 className="font-medium">Следующий урожай</h4>
-              <p className="text-sm text-gray-500">
-                {formatDate(predictions.nextHarvest)}
-              </p>
-              <p className="text-sm text-green-600 mt-1">
-                Ожидаемый урожай: {predictions.expectedYield} кг
-              </p>
-            </div>
+interface MetricSummaryProps {
+  label: string;
+  value: string;
+  trend: number;
+  icon: string;
+}
+
+function MetricSummary({ label, value, trend, icon }: MetricSummaryProps) {
+  const trendColor = trend > 0 ? 'text-green-600' : 'text-red-600';
+  const trendIcon = trend > 0 ? '↑' : '↓';
+
+  return (
+      <div className="bg-white p-4 rounded-lg border border-gray-200">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-2">
+            <span className="text-2xl">{icon}</span>
+            <span className="font-medium">{label}</span>
           </div>
-        </Card>
+          <span className="text-lg font-semibold">{value}</span>
+        </div>
+        <div className={`mt-2 text-sm ${trendColor}`}>
+          {trendIcon} {Math.abs(trend)}% за период
+        </div>
+      </div>
+  );
+}
 
-        <Card>
-          <div className="flex items-start space-x-3">
-            <div className="p-2 bg-yellow-100 rounded-lg">
-              <AlertTriangle className="h-5 w-5 text-yellow-600" />
-            </div>
-            <div>
-              <h4 className="font-medium">Возможные проблемы</h4>
-              <ul className="mt-1 space-y-1">
-                {predictions.potentialIssues.map((issue, index) => (
-                  <li key={index} className="text-sm text-gray-600">
-                    • {issue}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </div>
-        </Card>
-
-        <Card>
-          <div className="flex items-start space-x-3">
-            <div className="p-2 bg-blue-100 rounded-lg">
-              <TrendingDown className="h-5 w-5 text-blue-600" />
-            </div>
-            <div>
-              <h4 className="font-medium">Расход ресурсов</h4>
-              <div className="mt-2 space-y-2">
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-500">Вода:</span>
-                  <span>2.3 л/день</span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-500">Энергия:</span>
-                  <span>1.8 кВт/день</span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-500">Питательные в-ва:</span>
-                  <span>150 мл/неделю</span>
+function AnalyticsLoader() {
+  return (
+      <div className="space-y-6">
+        <div className="bg-white p-6 rounded-lg border border-gray-200">
+          <div className="h-80 bg-gray-100 rounded animate-pulse" />
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {[...Array(3)].map((_, i) => (
+              <div key={i} className="bg-white p-4 rounded-lg border border-gray-200 animate-pulse">
+                <div className="space-y-2">
+                  <div className="h-6 bg-gray-200 rounded w-3/4" />
+                  <div className="h-8 bg-gray-200 rounded w-1/2" />
                 </div>
               </div>
-            </div>
-          </div>
-        </Card>
+          ))}
+        </div>
       </div>
-    </div>
   );
 }

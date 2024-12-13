@@ -1,18 +1,21 @@
-import { SystemMetrics } from '../types/system';
-import { SYSTEM_THRESHOLDS } from './constants';
+// src/utils/metrics.ts
+import type { SystemMetrics } from '../types/monitoring';
 
-export const getMetricStatusColor = (
-  value: number,
-  threshold: { min: number; max: number }
-): string => {
-  if (value < threshold.min || value > threshold.max) return 'text-red-500';
-  if (value < threshold.min + 2 || value > threshold.max - 2) return 'text-yellow-500';
-  return 'text-green-500';
-};
+export function analyzeMetrics(metrics: SystemMetrics[]): {
+  trends: Record<keyof SystemMetrics, 'up' | 'down' | 'stable'>;
+  anomalies: string[];
+} {
+  // Реализация анализа трендов и аномалий
+  return {
+    trends: calculateTrends(metrics),
+    anomalies: detectAnomalies(metrics)
+  };
+}
 
-export const formatMetricValue = (
-  value: number,
-  metric: keyof typeof SYSTEM_THRESHOLDS
-): string => {
-  return `${value}${SYSTEM_THRESHOLDS[metric].unit}`;
-};
+export function calculateAverages(metrics: SystemMetrics[]): SystemMetrics {
+  // Расчет средних значений метрик
+}
+
+export function detectAnomalies(metrics: SystemMetrics[]): string[] {
+  // Обнаружение аномальных значений
+}

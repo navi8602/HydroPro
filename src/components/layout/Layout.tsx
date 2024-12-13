@@ -1,18 +1,24 @@
-import { ReactNode } from 'react';
-import { Navigation } from './Navigation';
-import { Outlet } from 'react-router-dom';
+// src/components/layout/Layout.tsx
+import { useAuth } from '../../contexts/AuthContext';
+import { Navigate } from 'react-router-dom';
 
-interface LayoutProps {
-  children: ReactNode;
-}
+export function Layout({ children }: { children: ReactNode }) {
+    const { isAuthenticated, isLoading } = useAuth();
 
-export function Layout() {
-  return (
-    <div className="min-h-screen bg-gray-100">
-      <Navigation />
-      <main className="container mx-auto px-4 py-8">
-        <Outlet />
-      </main>
-    </div>
-  );
+    if (isLoading) {
+        return <div>Loading...</div>;
+    }
+
+    if (!isAuthenticated) {
+        return <Navigate to="/auth" />;
+    }
+
+    return (
+        <div className="min-h-screen bg-gray-100">
+            <Navigation />
+            <main className="max-w-7xl mx-auto px-4 py-6">
+                {children}
+            </main>
+        </div>
+    );
 }
