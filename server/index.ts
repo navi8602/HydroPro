@@ -317,9 +317,18 @@ app.get("/api/systems", async (req, res) => {
            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
            ON CONFLICT (id) DO NOTHING
            RETURNING *`,
-          [system.id, system.name, system.model, system.description, system.capacity, 
-           system.dimensions, system.features, system.monthlyPrice, system.imageUrl, 
-           system.specifications]
+          [
+            system.id,
+            system.name,
+            system.model,
+            system.description,
+            system.capacity,
+            JSON.stringify(system.dimensions),
+            system.features,
+            system.monthlyPrice,
+            system.imageUrl,
+            JSON.stringify(system.specifications)
+          ]
         )
       );
       
