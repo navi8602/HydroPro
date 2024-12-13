@@ -74,13 +74,80 @@ app.post("/api/auth/verify-code", async (req, res) => {
   }
 });
 
+// Get available systems
 app.get("/api/systems", async (req, res) => {
   try {
-    const result = await pool.query('SELECT * FROM "RentedSystem" ORDER BY "createdAt" DESC');
+    const result = await pool.query('SELECT * FROM "System" ORDER BY "createdAt" DESC');
     res.json(result.rows);
   } catch (error) {
     console.error("Error fetching systems:", error);
     res.status(500).json({ error: "Failed to fetch systems" });
+  }
+});
+
+// Get user's rented systems
+app.get("/api/user/systems", async (req, res) => {
+  try {
+    const userId = req.headers.authorization?.split(' ')[1]; // Get user ID from token
+    const result = await pool.query(
+      `SELECT rs.*, s.* FROM "RentedSystem" rs 
+       JOIN "System" s ON rs."systemId" = s.id 
+       WHERE rs."userId" = $1 AND rs.status = 'ACTIVE'`,
+      [userId]
+    );
+    res.json(result.rows);
+  } catch (error) {
+    console.error("Error fetching user systems:", error);
+    res.status(500).json({ error: "Failed to fetch user systems" });
+  }
+});
+
+// Rent a system
+app.post("/api/systems/rent", async (req, res) => {
+  const { systemId, months } = req.body;
+  const userId = req.headers.authorization?.split(' ')[1];
+  
+  try {
+    const startDate = new Date();
+    const endDate = new Date();
+    endDate.setMonth(endDate.getMonth() + months);
+    
+    const result = await pool.query(
+      `INSERT INTO "RentedSystem" ("systemId", "userId", "startDate", "endDate", status)
+       VALUES ($1, $2, $3, $4, 'ACTIVE')
+       RETURNING *`,
+      [systemId, userId, startDate, endDate]
+    );
+    
+    res.json(result.rows[0]);
+  } catch (error) {
+    console.error("Error renting system:", error);
+    res.status(500).json({ error: "Failed to rent system" });
+  }
+});
+
+// Cancel system rental
+app.post("/api/systems/cancel", async (req, res) => {
+  const { rentalId } = req.body;
+  const userId = req.headers.authorization?.split(' ')[1];
+  
+  try {
+    const result = await pool.query(
+      `UPDATE "RentedSystem" 
+       SET status = 'CANCELLED', "updatedAt" = CURRENT_TIMESTAMP
+       WHERE id = $1 AND "userId" = $2
+       RETURNING *`,
+      [rentalId, userId]
+    );
+    
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: "Rental not found" });
+    }
+    
+    res.json(result.rows[0]);
+  } catch (error) {
+    console.error("Error cancelling rental:", error);
+    res.status(500).json({ error: "Failed to cancel rental" });
   }
 });
 
