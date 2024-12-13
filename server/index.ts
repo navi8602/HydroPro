@@ -30,6 +30,68 @@ app.get("/api/test", (req, res) => {
   res.json({ message: "Server is working!" });
 });
 
+// Get user's rented systems
+app.get("/api/user/systems", async (req, res) => {
+  try {
+    const phone = req.headers.authorization?.split(' ')[1];
+    const userResult = await pool.query(
+      'SELECT id FROM "User" WHERE phone = $1',
+      [phone]
+    );
+    
+    if (userResult.rows.length === 0) {
+      return res.json([]);
+    }
+
+    const userId = userResult.rows[0].id;
+    const result = await pool.query(
+      `SELECT s.*, rs.status, rs."startDate", rs."endDate" 
+       FROM "System" s
+       JOIN "RentedSystem" rs ON rs."systemId" = s.id
+       WHERE rs."userId" = $1 AND rs.status = 'ACTIVE'`,
+      [userId]
+    );
+    res.json(result.rows);
+  } catch (error) {
+    console.error("Error fetching user systems:", error);
+    res.status(500).json({ error: "Failed to fetch user systems" });
+  }
+});
+
+// Rent a system 
+app.post("/api/systems/rent", async (req, res) => {
+  try {
+    const { systemId, months } = req.body;
+    const phone = req.headers.authorization?.split(' ')[1];
+    
+    const userResult = await pool.query(
+      'SELECT id FROM "User" WHERE phone = $1',
+      [phone]
+    );
+
+    if (userResult.rows.length === 0) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    const userId = userResult.rows[0].id;
+    const startDate = new Date();
+    const endDate = new Date();
+    endDate.setMonth(endDate.getMonth() + months);
+
+    const result = await pool.query(
+      `INSERT INTO "RentedSystem" ("systemId", "userId", "startDate", "endDate", status)
+       VALUES ($1, $2, $3, $4, 'ACTIVE')
+       RETURNING *`,
+      [systemId, userId, startDate, endDate]
+    );
+
+    res.json(result.rows[0]);
+  } catch (error) {
+    console.error("Error renting system:", error);
+    res.status(500).json({ error: "Failed to rent system" });
+  }
+});
+
 app.post("/api/auth/send-code", (req, res) => {
   const { phone } = req.body;
   console.log(`Received phone: ${phone}`);
