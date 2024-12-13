@@ -90,22 +90,13 @@ app.get("/api/user/systems", async (req, res) => {
   try {
     const phone = req.headers.authorization?.split(' ')[1]; // Get phone from token
     
-    // First get the user ID using phone
-    const userResult = await pool.query(
-      `SELECT id FROM "User" WHERE phone = $1`,
-      [phone]
-    );
-    
-    if (userResult.rows.length === 0) {
-      return res.json([]);
-    }
-
-    // Then get the rented systems for this user ID
+    // Get systems with user phone directly
     const result = await pool.query(
-      `SELECT s.* FROM "RentedSystem" rs 
-       JOIN "System" s ON rs."systemId" = s.id 
-       WHERE rs."userId" = $1 AND rs.status = 'ACTIVE'`,
-      [userResult.rows[0].id]
+      `SELECT s.* FROM "System" s
+       JOIN "RentedSystem" rs ON rs."systemId" = s.id
+       JOIN "User" u ON rs."userId" = u.id
+       WHERE u.phone = $1 AND rs.status = 'ACTIVE'`,
+      [phone]
     );
     res.json(result.rows);
   } catch (error) {
