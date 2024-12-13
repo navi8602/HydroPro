@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from 'react';
 import { Card } from '../components/ui/Card';
 import { RentedSystemCard } from '../components/dashboard/RentedSystemCard';
