@@ -41,7 +41,7 @@ app.post("/api/auth/verify-code", async (req, res) => {
       `INSERT INTO "User" (phone, role) 
        VALUES ($1, 'USER') 
        ON CONFLICT (phone) DO UPDATE 
-       SET phone = $1, "updatedAt" = CURRENT_TIMESTAMP 
+       SET phone = EXCLUDED.phone 
        RETURNING *`,
       [phone]
     );
@@ -57,12 +57,18 @@ app.post("/api/auth/verify-code", async (req, res) => {
 
 app.get("/api/systems", async (req, res) => {
   try {
-    const result = await pool.query('SELECT * FROM "RentedSystem"');
+    const result = await pool.query('SELECT * FROM "RentedSystem" ORDER BY "createdAt" DESC');
     res.json(result.rows);
   } catch (error) {
     console.error("Error fetching systems:", error);
     res.status(500).json({ error: "Failed to fetch systems" });
   }
+});
+
+// Error handling middleware
+app.use((err: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {
+  console.error(err.stack);
+  res.status(500).json({ error: "Internal Server Error" });
 });
 
 const startServer = async () => {
