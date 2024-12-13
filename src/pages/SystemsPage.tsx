@@ -14,11 +14,16 @@ export function SystemsPage() {
 
   const handleRentSystem = async (systemId: string, months: number) => {
     try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        throw new Error('Не авторизован');
+      }
+      
       const response = await fetch('http://0.0.0.0:3002/api/systems/rent', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({ systemId, months })
       });
