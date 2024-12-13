@@ -2,8 +2,7 @@
 import { 
   BrowserRouter as Router, 
   Routes, 
-  Route,
-  future
+  Route
 } from 'react-router-dom';
 import { Layout } from './components/layout/Layout';
 import { DashboardPage } from './pages/DashboardPage';
@@ -13,10 +12,6 @@ import { LoginPage } from './pages/LoginPage';
 import { useEffect, useState } from 'react';
 import { RentedSystem } from './types/system';
 import { getAuthToken } from './utils/auth';
-
-// Configure future flags
-future.v7_startTransition = true;
-future.v7_relativeSplatPath = true;
 
 export default function App() {
   const [rentedSystems, setRentedSystems] = useState<RentedSystem[]>([]);
