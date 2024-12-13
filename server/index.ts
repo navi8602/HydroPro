@@ -1,5 +1,8 @@
 
 import express from 'express';
+import { PrismaClient } from '@prisma/client';
+
+const prisma = new PrismaClient();
 import cors from 'cors';
 import { Pool } from 'pg';
 import dotenv from 'dotenv';
@@ -140,4 +143,32 @@ app.post("/api/systems/rent", async (req, res) => {
 
 app.listen(port, '0.0.0.0', () => {
   console.log(`Server running on port ${port}`);
+});
+// Users API endpoints
+app.get('/api/users', async (req, res) => {
+  try {
+    const users = await prisma.user.findMany({
+      include: {
+        permissions: true
+      }
+    });
+    res.json(users);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch users' });
+  }
+});
+
+app.patch('/api/users/:id/role', async (req, res) => {
+  const { id } = req.params;
+  const { role } = req.body;
+  
+  try {
+    const user = await prisma.user.update({
+      where: { id: Number(id) },
+      data: { role }
+    });
+    res.json(user);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to update user role' });
+  }
 });
