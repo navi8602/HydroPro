@@ -18,9 +18,7 @@ const port = 3002;
 
 app.get("/api/systems", async (req, res) => {
   try {
-    const result = await pool.query('SELECT * FROM "System" ORDER BY "createdAt" DESC');
-    
-    if (result.rows.length === 0) {
+    const HYDROPONIC_SYSTEMS = [
       const HYDROPONIC_SYSTEMS = [
         {
           id: 'hydropro-2000',
@@ -38,7 +36,13 @@ app.get("/api/systems", async (req, res) => {
             lightingType: 'LED полного спектра',
             automationLevel: 'basic'
           })
-        },
+        }
+    ];
+    res.json(HYDROPONIC_SYSTEMS);
+  } catch (error) {
+    console.error('Error fetching systems:', error);
+    res.status(500).json({ error: 'Failed to fetch systems' });
+  }
         {
           id: 'hydropro-3000',
           name: 'HydroPro 3000',
@@ -55,7 +59,13 @@ app.get("/api/systems", async (req, res) => {
             lightingType: 'Регулируемый LED',
             automationLevel: 'advanced'
           })
-        },
+        }
+    ];
+    res.json(HYDROPONIC_SYSTEMS);
+  } catch (error) {
+    console.error('Error fetching systems:', error);
+    res.status(500).json({ error: 'Failed to fetch systems' });
+  }
         {
           id: 'hydropro-4000',
           name: 'HydroPro 4000',
