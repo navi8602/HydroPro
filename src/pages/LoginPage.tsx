@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import InputMask from 'react-input-mask';
+import { PatternFormat } from 'react-number-format';
 
 export function LoginPage() {
   const [phone, setPhone] = useState('');
@@ -12,7 +12,7 @@ export function LoginPage() {
 
   const handleSendCode = async () => {
     try {
-      const response = await fetch('http://localhost:3002/api/auth/send-code', {
+      const response = await fetch('http://0.0.0.0:3002/api/auth/send-code', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -35,7 +35,7 @@ export function LoginPage() {
 
   const handleVerifyCode = async () => {
     try {
-      const response = await fetch('http://localhost:3002/api/auth/verify-code', {
+      const response = await fetch('http://0.0.0.0:3002/api/auth/verify-code', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -76,10 +76,10 @@ export function LoginPage() {
         
         {step === 'phone' ? (
           <div className="mt-8 space-y-6">
-            <InputMask
-              mask="+7 (999) 999-99-99"
+            <PatternFormat
+              format="+7 (###) ###-##-##"
               value={phone}
-              onChange={(e) => setPhone(e.target.value)}
+              onValueChange={(values) => setPhone(values.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-md"
               placeholder="+7 (___) ___-__-__"
             />
