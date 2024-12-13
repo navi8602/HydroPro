@@ -89,11 +89,20 @@ app.get("/api/systems", async (req, res) => {
 app.get("/api/user/systems", async (req, res) => {
   try {
     const userId = req.headers.authorization?.split(' ')[1]; // Get user ID from token
+    const userResult = await pool.query(
+      `SELECT id FROM "User" WHERE phone = $1`,
+      [userId]
+    );
+    
+    if (userResult.rows.length === 0) {
+      return res.json([]);
+    }
+
     const result = await pool.query(
       `SELECT rs.*, s.* FROM "RentedSystem" rs 
        JOIN "System" s ON rs."systemId" = s.id 
        WHERE rs."userId" = $1 AND rs.status = 'ACTIVE'`,
-      [userId]
+      [userResult.rows[0].id]
     );
     res.json(result.rows);
   } catch (error) {
