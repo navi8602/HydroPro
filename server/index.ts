@@ -7,16 +7,11 @@ const prisma = new PrismaClient();
 const app = express();
 const port = process.env.PORT || 3002;
 
+app.use(express.json());
 app.use(cors({
   origin: ['http://0.0.0.0:3000', 'http://localhost:3000', '*'],
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS']
+  credentials: true
 }));
-app.use(express.json());
-
-app.get('/api/health', (_req, res) => {
-  res.json({ status: 'ok' });
-});
 
 app.post('/api/auth/send-code', (req, res) => {
   const { phone } = req.body;
@@ -31,49 +26,15 @@ app.post('/api/auth/verify-code', async (req, res) => {
       const user = await prisma.user.upsert({
         where: { phone },
         update: {},
-        create: {
-          phone,
-          role: 'USER',
-          rentedSystems: {
-            create: {
-              systemName: 'Базовая система',
-              capacity: 6,
-              rentalPeriod: 30,
-              startDate: new Date(),
-              endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
-              plants: {
-                create: []
-              },
-              metrics: {
-                create: [
-                  {
-                    temperature: 23,
-                    humidity: 65,
-                    nutrientLevel: 500,
-                    phLevel: 6.5
-                  }
-                ]
-              }
-            }
-          }
-        },
-        include: {
-          rentedSystems: true
-        }
+        create: { phone }
       });
-      
-      res.json({ 
-        success: true, 
-        token: `auth_${user.id}`,
-        userId: user.id,
-        systems: user.rentedSystems
-      });
+      res.json({ success: true, user });
     } catch (error) {
       console.error('Error creating user:', error);
-      res.status(500).json({ error: 'Error creating user' });
+      res.status(500).json({ success: false, error: 'Error creating user' });
     }
   } else {
-    res.status(400).json({ error: 'Invalid code' });
+    res.status(400).json({ success: false, error: 'Invalid code' });
   }
 });
 
