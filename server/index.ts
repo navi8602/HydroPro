@@ -59,8 +59,13 @@ app.post("/api/systems/rent", async (req, res) => {
     if (error instanceof Error) {
       res.status(500).json({ error: error.message });
     } else {
-    res.status(500).json({ error: 'Failed to rent system' });
+      res.status(500).json({ error: 'Failed to rent system' });
+    }
   }
+});
+
+app.listen(port, '0.0.0.0', () => {
+  console.log(`Server running on port ${port}`);
 });
 
 app.listen(port, '0.0.0.0', () => {
