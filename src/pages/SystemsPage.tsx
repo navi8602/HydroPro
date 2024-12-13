@@ -1,21 +1,36 @@
+
 import { SystemList } from '../components/rental/SystemList';
 import { ArrowLeft } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { HydroponicSystem } from '../types/system';
 import { HYDROPONIC_SYSTEMS } from '../data/systems';
+import { useNavigate } from 'react-router-dom';
 
-interface SystemsPageProps {
-  onRentSystem: (systemId: string, months: number) => void;
-}
+export function SystemsPage() {
+  const [systems] = useState<HydroponicSystem[]>(HYDROPONIC_SYSTEMS);
+  const navigate = useNavigate();
 
-export function SystemsPage({ onRentSystem }: SystemsPageProps) {
-  const [systems, setSystems] = useState<HydroponicSystem[]>(HYDROPONIC_SYSTEMS);
-  const [loading, setLoading] = useState(false);
+  const handleRentSystem = async (systemId: string, months: number) => {
+    try {
+      const response = await fetch('/api/systems/rent', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify({ systemId, months })
+      });
 
-  if (loading) {
-    return <div className="p-6">Loading...</div>;
-  }
+      if (!response.ok) {
+        throw new Error('Failed to rent system');
+      }
+
+      navigate('/dashboard');
+    } catch (error) {
+      console.error('Error renting system:', error);
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -31,7 +46,7 @@ export function SystemsPage({ onRentSystem }: SystemsPageProps) {
 
       <SystemList
         systems={systems}
-        onRentSystem={onRentSystem}
+        onRentSystem={handleRentSystem}
       />
     </div>
   );
