@@ -83,36 +83,12 @@ app.get("/api/users", async (req, res) => {
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
       return res.status(401).json({ error: 'Unauthorized' });
     }
+
     const token = authHeader.split(' ')[1];
     const userId = parseInt(token);
-    
+
     if (isNaN(userId)) {
       return res.status(400).json({ error: 'Invalid user ID' });
-    }
-
-    const user = await pool.query(
-      `SELECT id, phone, role, "createdAt" as "registeredAt"
-       FROM "User" 
-       WHERE id = $1`,
-      [userId]
-    );
-
-    if (user.rows.length === 0) {
-      return res.status(404).json({ error: 'User not found' });
-    }
-
-    res.json(user.rows[0]);
-  } catch (error) {
-    console.error('Error fetching user:', error);
-    res.status(500).json({ error: 'Failed to fetch user' });
-  }
-});
-
-app.get("/api/users", async (req, res) => {
-  try {
-    const authHeader = req.headers.authorization;
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return res.status(401).json({ error: 'Unauthorized' });
     }
 
     const result = await pool.query(
@@ -121,10 +97,16 @@ app.get("/api/users", async (req, res) => {
         'systemId', rs."systemId",
         'accessLevel', rs.status
       )) FROM "RentedSystem" rs WHERE rs."userId" = u.id) as permissions
-      FROM "User" u`
+      FROM "User" u
+      WHERE u.id = $1`,
+      [userId]
     );
     
-    res.json(result.rows);
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    res.json(result.rows[0]);
   } catch (error) {
     console.error('Error fetching users:', error);
     res.status(500).json({ error: 'Failed to fetch users' });
