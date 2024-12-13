@@ -140,10 +140,17 @@ app.post("/api/systems/rent", async (req, res) => {
     console.log('Successfully rented system:', result.rows[0]);
     res.json(result.rows[0]);
   } catch (error) {
-    console.error("Error renting system:", error);
+    const errorDetails = {
+      message: error instanceof Error ? error.message : 'Unknown error',
+      timestamp: new Date().toISOString(),
+      systemId,
+      userId: userResult?.rows[0]?.id,
+      phone
+    };
+    console.error("Error renting system:", errorDetails);
     res.status(500).json({ 
       error: "Failed to rent system",
-      details: error.message 
+      details: errorDetails
     });
   }
 });

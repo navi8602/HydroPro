@@ -81,7 +81,12 @@ function App() {
 
       fetchUserSystems();
     } catch (error) {
-      console.error('Error renting system:', error);
+      const errorDetails = error instanceof Error ? error.message : 'Unknown error';
+      console.error('Error renting system:', {
+        error: errorDetails,
+        systemId,
+        months
+      });
     }
   };
 
