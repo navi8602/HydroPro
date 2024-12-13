@@ -23,7 +23,7 @@ export function ProfilePage() {
     
     fetch(`/api/users/${token}`, {
       headers: {
-        'Authorization': `Bearer ${token}`
+        'Authorization': `Bearer ${localStorage.getItem('token')}`
       }
     })
     .then(res => {

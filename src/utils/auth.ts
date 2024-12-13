@@ -17,17 +17,7 @@ export function canViewMetrics(accessLevel: AccessLevel | null): boolean {
 }
 
 export function getAuthToken(): string | null {
-  const token = localStorage.getItem('token');
-  if (!token) return null;
-  try {
-    const parts = token.split('.');
-    if (parts.length !== 3) return null;
-    const payload = JSON.parse(atob(parts[1]));
-    return payload.id?.toString() || null;
-  } catch (error) {
-    console.error('Error parsing token:', error);
-    return null;
-  }
+  return localStorage.getItem('token');
 }
 
 export function setAuthToken(token: string): void {
