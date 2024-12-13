@@ -46,32 +46,40 @@ function App() {
     fetchUserSystems();
   }, []);
 
-  const handleRentSystem = (systemId: string, months: number) => {
-    const system = HYDROPONIC_SYSTEMS.find(s => s.id === systemId);
-    if (!system) return;
+  const handleRentSystem = async (systemId: string, months: number) => {
+    try {
+      const response = await fetch('/api/systems/rent', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('phone')}`
+        },
+        body: JSON.stringify({ systemId, months })
+      });
 
-    const startDate = new Date();
-    const endDate = new Date();
-    endDate.setMonth(endDate.getMonth() + months);
-
-    const newSystem: RentedSystem = {
-      id: crypto.randomUUID(),
-      name: system.name,
-      capacity: system.capacity,
-      rentalPeriod: months as 3 | 6 | 12,
-      startDate: startDate.toISOString(),
-      endDate: endDate.toISOString(),
-      plants: [],
-      metrics: {
-        temperature: 22,
-        humidity: 60,
-        nutrientLevel: 100,
-        phLevel: 6.0,
-        lastUpdated: new Date().toISOString()
+      if (!response.ok) {
+        throw new Error('Failed to rent system');
       }
-    };
 
-    setRentedSystems(prev => [...prev, newSystem]);
+      // Refresh systems list after renting
+      const fetchUserSystems = async () => {
+        try {
+          const response = await fetch('/api/user/systems', {
+            headers: {
+              'Authorization': `Bearer ${localStorage.getItem('phone')}`
+            }
+          });
+          const data = await response.json();
+          setRentedSystems(data);
+        } catch (error) {
+          console.error('Error fetching user systems:', error);
+        }
+      };
+
+      fetchUserSystems();
+    } catch (error) {
+      console.error('Error renting system:', error);
+    }
   };
 
   return (
