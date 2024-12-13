@@ -4,39 +4,51 @@ import { Card } from '../components/ui/Card';
 import { RentedSystemCard } from '../components/dashboard/RentedSystemCard';
 import { UserCircle } from 'lucide-react';
 import type { RentedSystem } from '../types/system';
+import { getAuthToken } from '../utils/auth';
 
 export function ProfilePage() {
   const [rentedSystems, setRentedSystems] = useState<RentedSystem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const token = localStorage.getItem('token');
   const [userId, setUserId] = useState<string | null>(null);
 
   useEffect(() => {
+    const token = getAuthToken();
     if (token) {
       try {
-        const payload = JSON.parse(atob(token.split('.')[1]));
+        const parts = token.split('.');
+        if (parts.length !== 3) {
+          throw new Error('Invalid token format');
+        }
+        const payload = JSON.parse(atob(parts[1]));
         setUserId(payload.id);
       } catch (error) {
         console.error('Error parsing token:', error);
+        setError('Ошибка авторизации');
       }
     }
-  }, [token]);
+  }, []);
 
   useEffect(() => {
-    fetchUserSystems();
-  }, []);
+    if (userId) {
+      fetchUserSystems();
+    }
+  }, [userId]);
 
   const fetchUserSystems = async () => {
     try {
+      const token = getAuthToken();
       const response = await fetch('/api/systems/user', {
         headers: {
-          'Authorization': `Bearer ${userId}`
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
         }
       });
+      
       if (!response.ok) {
-        throw new Error('Failed to fetch systems');
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
+      
       const data = await response.json();
       setRentedSystems(data || []);
     } catch (error) {
@@ -46,6 +58,16 @@ export function ProfilePage() {
       setLoading(false);
     }
   };
+
+  if (error) {
+    return (
+      <div className="p-6">
+        <Card className="p-6 text-center">
+          <p className="text-red-500">{error}</p>
+        </Card>
+      </div>
+    );
+  }
 
   if (loading) {
     return (
@@ -65,7 +87,7 @@ export function ProfilePage() {
           <UserCircle className="h-16 w-16 text-gray-400" />
           <div>
             <h2 className="text-2xl font-bold text-gray-900">Профиль пользователя</h2>
-            <p className="text-gray-500">ID: {userId}</p>
+            <p className="text-gray-500">ID: {userId || 'Не определен'}</p>
           </div>
         </div>
       </Card>
