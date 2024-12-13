@@ -59,35 +59,36 @@ function App() {
 
       if (!response.ok) {
         console.error('❌ Ошибка при аренде системы');
-        throw new Error('Failed to rent system');
+        const errorText = await response.text();
+        throw new Error(`Failed to rent system: ${errorText}`);
       }
       
       console.log('✅ Система успешно арендована');
-
+      
       // Refresh systems list after renting
-      const fetchUserSystems = async () => {
-        try {
-          const response = await fetch('/api/user/systems', {
-            headers: {
-              'Authorization': `Bearer ${localStorage.getItem('phone')}`
-            }
-          });
-          const data = await response.json();
-          setRentedSystems(data);
-        } catch (error) {
-          console.error('Error fetching user systems:', error);
-        }
-      };
-
-      fetchUserSystems();
+      await fetchUserSystems();
+      
     } catch (error) {
       const errorDetails = error instanceof Error ? error.message : 'Unknown error';
       console.error('Error renting system:', {
         error: errorDetails,
         systemId,
-        months,
-        response: await response.text() // Log raw response for debugging
+        months
       });
+    }
+  };
+  
+  const fetchUserSystems = async () => {
+    try {
+      const response = await fetch('/api/user/systems', {
+        headers: {
+          'Authorization': `${localStorage.getItem('phone')}`
+        }
+      });
+      const data = await response.json();
+      setRentedSystems(data);
+    } catch (error) {
+      console.error('Error fetching user systems:', error);
     }
   };
 
