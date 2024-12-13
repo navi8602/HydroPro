@@ -224,8 +224,7 @@ app.post("/api/auth/send-code", (req, res) => {
 app.post("/api/auth/verify-code", async (req, res) => {
   const { phone } = req.body;
   try {
-    await pool.query('SELECT 1'); // Test connection
-    
+    console.log('Verifying code for phone:', phone);
     const result = await pool.query(
       `INSERT INTO "User" (phone, role) 
        VALUES ($1, 'ADMIN') 
