@@ -301,11 +301,84 @@ app.post("/api/auth/verify-code", async (req, res) => {
 });
 
 // Get available systems
-// Import mock data
-import { HYDROPONIC_SYSTEMS } from '../src/data/systems';
-
-// Get all systems with fallback to mock data
 app.get("/api/systems", async (req, res) => {
+  try {
+    // First try to get systems from database
+    const result = await pool.query('SELECT * FROM "System" ORDER BY "createdAt" DESC');
+    
+    // If no systems exist, create from mock data
+    if (result.rows.length === 0) {
+      // Import mock data directly here to avoid module issues
+      const HYDROPONIC_SYSTEMS = [
+        {
+          id: 'hydropro-2000',
+          name: 'HydroPro 2000',
+          model: 'HP-2000',
+          description: 'Компактная система для начинающих. Идеально подходит для выращивания зелени и небольших овощей.',
+          capacity: 8,
+          dimensions: { width: 60, height: 150, depth: 30 },
+          features: ['Автоматический полив', 'LED освещение', 'Базовый контроль pH', 'Таймер освещения'],
+          monthlyPrice: 2500,
+          imageUrl: 'https://images.unsplash.com/photo-1558449907-39bb080974df',
+          specifications: {
+            powerConsumption: 100,
+            waterCapacity: 20,
+            lightingType: 'LED полного спектра',
+            automationLevel: 'basic'
+          }
+        },
+        {
+          id: 'hydropro-3000',
+          name: 'HydroPro 3000',
+          model: 'HP-3000',
+          description: 'Продвинутая система для опытных пользователей.',
+          capacity: 12,
+          dimensions: { width: 80, height: 180, depth: 40 },
+          features: ['Умный полив с датчиками', 'Регулируемое LED освещение'],
+          monthlyPrice: 4500,
+          imageUrl: 'https://images.unsplash.com/photo-1558449907-39bb080974df',
+          specifications: {
+            powerConsumption: 180,
+            waterCapacity: 40,
+            lightingType: 'Регулируемый LED',
+            automationLevel: 'advanced'
+          }
+        }
+      ];
+
+      // Insert mock systems into database
+      const createPromises = HYDROPONIC_SYSTEMS.map(system =>
+        pool.query(
+          `INSERT INTO "System" (id, name, model, description, capacity, dimensions, features, "monthlyPrice", "imageUrl", specifications)
+           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+           ON CONFLICT (id) DO NOTHING
+           RETURNING *`,
+          [
+            system.id,
+            system.name,
+            system.model,
+            system.description,
+            system.capacity,
+            system.dimensions,
+            system.features,
+            system.monthlyPrice,
+            system.imageUrl,
+            system.specifications
+          ]
+        )
+      );
+      
+      await Promise.all(createPromises);
+      const newResult = await pool.query('SELECT * FROM "System" ORDER BY "createdAt" DESC');
+      res.json(newResult.rows);
+    } else {
+      res.json(result.rows);
+    }
+  } catch (error) {
+    console.error("Error fetching/creating systems:", error);
+    res.status(500).json({ error: "Failed to fetch systems" });
+  }
+});
   try {
     const result = await pool.query('SELECT * FROM "System" ORDER BY "createdAt" DESC');
     
