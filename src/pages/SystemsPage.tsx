@@ -14,20 +14,29 @@ export function SystemsPage() {
   const handleRentSystem = async (systemId: string, months: number) => {
     try {
       const token = localStorage.getItem('token');
-      if (!token) {
-        throw new Error('Не авторизован');
-      }
+      console.log('Current token:', token);
       
-      const API_URL = import.meta.env.VITE_API_URL || 'http://0.0.0.0:3002';
-      const response = await fetch(`${API_URL}/api/systems/rent`, {
+      if (!token) {
+        throw new Error('Не авторизован - токен отсутствует');
+      }
+
+      const requestBody = { systemId, months };
+      console.log('Request body:', requestBody);
+      
+      const response = await fetch('http://0.0.0.0:3002/api/systems/rent', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify({ systemId, months }),
+        body: JSON.stringify(requestBody),
         credentials: 'include'
       });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || `HTTP ошибка: ${response.status}`);
+      }
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));

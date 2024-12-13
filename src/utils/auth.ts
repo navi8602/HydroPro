@@ -15,3 +15,13 @@ export function canModifySystem(accessLevel: AccessLevel | null): boolean {
 export function canViewMetrics(accessLevel: AccessLevel | null): boolean {
   return accessLevel === 'full' || accessLevel === 'metrics';
 }
+
+export function getAuthToken(): string | null {
+  const token = localStorage.getItem('token');
+  console.log('Retrieved token:', token);
+  return token;
+}
+
+export function setAuthToken(token: string): void {
+  localStorage.setItem('token', token);
+}
