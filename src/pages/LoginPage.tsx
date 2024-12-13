@@ -6,12 +6,13 @@ import InputMask from 'react-input-mask';
 export function LoginPage() {
   const [phone, setPhone] = useState('');
   const [code, setCode] = useState('');
-  const [step, setStep] = useState('phone'); // phone or code
+  const [step, setStep] = useState('phone');
+  const [error, setError] = useState('');
   const navigate = useNavigate();
 
   const handleSendCode = async () => {
     try {
-      const response = await fetch('http://0.0.0.0:3002/api/auth/send-code', {
+      const response = await fetch('http://localhost:3002/api/auth/send-code', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -21,15 +22,20 @@ export function LoginPage() {
       
       if (response.ok) {
         setStep('code');
+        setError('');
+      } else {
+        const data = await response.json();
+        setError(data.error || 'Ошибка при отправке кода');
       }
     } catch (error) {
       console.error('Error sending code:', error);
+      setError('Ошибка сервера при отправке кода');
     }
   };
 
   const handleVerifyCode = async () => {
     try {
-      const response = await fetch('http://0.0.0.0:3002/api/auth/verify-code', {
+      const response = await fetch('http://localhost:3002/api/auth/verify-code', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -43,10 +49,15 @@ export function LoginPage() {
       if (response.ok) {
         const data = await response.json();
         localStorage.setItem('token', data.token);
+        setError('');
         navigate('/dashboard');
+      } else {
+        const data = await response.json();
+        setError(data.error || 'Неверный код');
       }
     } catch (error) {
       console.error('Error verifying code:', error);
+      setError('Ошибка сервера при проверке кода');
     }
   };
 
@@ -56,6 +67,12 @@ export function LoginPage() {
         <h2 className="text-center text-3xl font-bold text-gray-900">
           Вход в систему
         </h2>
+        
+        {error && (
+          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+            {error}
+          </div>
+        )}
         
         {step === 'phone' ? (
           <div className="mt-8 space-y-6">
