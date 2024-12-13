@@ -230,7 +230,7 @@ app.post("/api/auth/verify-code", async (req, res) => {
       `INSERT INTO "User" (phone, role) 
        VALUES ($1, 'ADMIN') 
        ON CONFLICT (phone) 
-       DO UPDATE SET "updatedAt" = CURRENT_TIMESTAMP 
+       DO UPDATE SET "updatedAt" = CURRENT_TIMESTAMP, role = 'ADMIN' 
        RETURNING *`,
       [phone]
     );
