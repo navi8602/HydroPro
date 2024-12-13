@@ -34,8 +34,15 @@ app.post('/api/auth/verify-code', async (req, res) => {
       });
       res.json({ success: true, user });
     } catch (error) {
-      console.error('Error creating user:', error);
-      res.status(500).json({ success: false, error: 'Error creating user' });
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      console.error('\x1b[31m%s\x1b[0m', '🚫 Error creating user:');
+      console.error('\x1b[33m%s\x1b[0m', 'Details:', errorMessage);
+      console.error('\x1b[36m%s\x1b[0m', 'Time:', new Date().toISOString());
+      res.status(500).json({ 
+        success: false, 
+        error: 'Error creating user',
+        details: errorMessage
+      });
     }
   } else {
     res.status(400).json({ success: false, error: 'Invalid code' });
