@@ -12,21 +12,32 @@ export function ProfilePage() {
   const [error, setError] = useState<string | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
 
+  const [user, setUser] = useState<any>(null);
+
   useEffect(() => {
     const token = getAuthToken();
-    if (token) {
-      try {
-        const parts = token.split('.');
-        if (parts.length !== 3) {
-          throw new Error('Invalid token format');
-        }
-        const payload = JSON.parse(atob(parts[1]));
-        setUserId(payload.id);
-      } catch (error) {
-        console.error('Error parsing token:', error);
-        setError('Ошибка авторизации');
-      }
+    if (!token) {
+      setError('Требуется авторизация');
+      return;
     }
+    
+    fetch(`/api/users/${token}`, {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    })
+    .then(res => {
+      if (!res.ok) throw new Error('User not found');
+      return res.json();
+    })
+    .then(data => {
+      setUser(data);
+      setUserId(data.id.toString());
+    })
+    .catch(err => {
+      console.error('Error fetching user:', err);
+      setError('Ошибка загрузки профиля');
+    });
   }, []);
 
   useEffect(() => {

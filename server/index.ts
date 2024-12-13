@@ -77,6 +77,33 @@ app.post("/api/auth/verify-code", async (req, res) => {
   }
 });
 
+app.get("/api/users/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const userId = parseInt(id);
+    
+    if (isNaN(userId)) {
+      return res.status(400).json({ error: 'Invalid user ID' });
+    }
+
+    const user = await pool.query(
+      `SELECT id, phone, role, "createdAt" as "registeredAt"
+       FROM "User" 
+       WHERE id = $1`,
+      [userId]
+    );
+
+    if (user.rows.length === 0) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    res.json(user.rows[0]);
+  } catch (error) {
+    console.error('Error fetching user:', error);
+    res.status(500).json({ error: 'Failed to fetch user' });
+  }
+});
+
 app.get("/api/users", async (req, res) => {
   try {
     const authHeader = req.headers.authorization;
