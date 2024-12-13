@@ -64,11 +64,15 @@ app.post("/api/systems/rent", async (req, res) => {
     const { systemId, months } = req.body;
     const phone = req.headers.authorization?.split(' ')[1];
     
+    console.log('Attempting to rent system:', { systemId, months, phone });
+    
     if (!phone) {
+      console.log('Rent failed: No phone provided');
       return res.status(401).json({ error: "Unauthorized: No phone provided" });
     }
 
     if (!systemId || !months) {
+      console.log('Rent failed: Missing fields', { systemId, months });
       return res.status(400).json({ error: "Missing required fields" });
     }
 
@@ -78,10 +82,13 @@ app.post("/api/systems/rent", async (req, res) => {
     );
 
     if (userResult.rows.length === 0) {
+      console.log('Rent failed: User not found for phone', phone);
       return res.status(404).json({ error: "User not found" });
     }
 
     const userId = userResult.rows[0].id;
+    console.log('Found user:', userId);
+
     const startDate = new Date();
     const endDate = new Date();
     endDate.setMonth(endDate.getMonth() + months);
@@ -93,7 +100,22 @@ app.post("/api/systems/rent", async (req, res) => {
     );
 
     if (systemResult.rows.length === 0) {
+      console.log('Rent failed: System not found', systemId);
       return res.status(404).json({ error: "System not found" });
+    }
+
+    // Check if system is already rented
+    const rentedCheck = await pool.query(
+      `SELECT id FROM "RentedSystem" 
+       WHERE "systemId" = $1 
+       AND status = 'ACTIVE'
+       AND "endDate" > CURRENT_TIMESTAMP`,
+      [systemId]
+    );
+
+    if (rentedCheck.rows.length > 0) {
+      console.log('Rent failed: System already rented', systemId);
+      return res.status(400).json({ error: "System is already rented" });
     }
 
     const result = await pool.query(
@@ -103,6 +125,7 @@ app.post("/api/systems/rent", async (req, res) => {
       [systemId, userId, startDate, endDate]
     );
 
+    console.log('Successfully rented system:', result.rows[0]);
     res.json(result.rows[0]);
   } catch (error) {
     console.error("Error renting system:", error);
