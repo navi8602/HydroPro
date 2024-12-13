@@ -37,6 +37,8 @@ app.post("/api/auth/send-code", (req, res) => {
 app.post("/api/auth/verify-code", async (req, res) => {
   const { phone } = req.body;
   try {
+    await pool.query('SELECT 1'); // Test connection
+    
     const result = await pool.query(
       `INSERT INTO "User" (phone, role) 
        VALUES ($1, 'USER') 
@@ -56,10 +58,10 @@ app.post("/api/auth/verify-code", async (req, res) => {
       res.status(400).json({ success: false, error: 'Failed to create user' });
     }
   } catch (error) {
-    console.error("Error during user upsert:", error);
+    console.error("Database error:", error);
     res.status(500).json({
       success: false,
-      error: error instanceof Error ? error.message : "Unknown error",
+      error: "Database connection error. Please try again.",
     });
   }
 });
