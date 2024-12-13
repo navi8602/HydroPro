@@ -1,4 +1,3 @@
-
 import express from 'express';
 import { PrismaClient } from '@prisma/client';
 
@@ -22,7 +21,6 @@ const port = 3002;
 app.get("/api/systems", async (req, res) => {
   try {
     const HYDROPONIC_SYSTEMS = [
-      const HYDROPONIC_SYSTEMS = [
         {
           id: 'hydropro-2000',
           name: 'HydroPro 2000',
@@ -39,13 +37,7 @@ app.get("/api/systems", async (req, res) => {
             lightingType: 'LED полного спектра',
             automationLevel: 'basic'
           })
-        }
-    ];
-    res.json(HYDROPONIC_SYSTEMS);
-  } catch (error) {
-    console.error('Error fetching systems:', error);
-    res.status(500).json({ error: 'Failed to fetch systems' });
-  }
+        },
         {
           id: 'hydropro-3000',
           name: 'HydroPro 3000',
@@ -62,13 +54,7 @@ app.get("/api/systems", async (req, res) => {
             lightingType: 'Регулируемый LED',
             automationLevel: 'advanced'
           })
-        }
-    ];
-    res.json(HYDROPONIC_SYSTEMS);
-  } catch (error) {
-    console.error('Error fetching systems:', error);
-    res.status(500).json({ error: 'Failed to fetch systems' });
-  }
+        },
         {
           id: 'hydropro-4000',
           name: 'HydroPro 4000',
@@ -110,12 +96,33 @@ app.get("/api/systems", async (req, res) => {
 
       const newResult = await pool.query('SELECT * FROM "System" ORDER BY "createdAt" DESC');
       res.json(newResult.rows);
-    } else {
-      res.json(result.rows);
-    }
   } catch (error) {
-    console.error("Error fetching/creating systems:", error);
-    res.status(500).json({ error: "Failed to fetch systems" });
+    console.error('Error fetching systems:', error);
+    res.status(500).json({ error: 'Failed to fetch systems' });
+  }
+});
+
+app.post('/api/systems/create-test', async (req, res) => {
+  try {
+    await prisma.$executeRaw`
+      INSERT INTO "RentedSystem" ("systemId", "userId", "startDate", "endDate", "status")
+      SELECT 
+        'system1',
+        "User".id,
+        CURRENT_TIMESTAMP,
+        CURRENT_TIMESTAMP + INTERVAL '6 months',
+        'ACTIVE'
+      FROM "User"
+      WHERE NOT EXISTS (
+        SELECT 1 
+        FROM "RentedSystem" 
+        WHERE "RentedSystem"."userId" = "User".id
+      )
+    `;
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Error creating test systems:', error);
+    res.status(500).json({ error: 'Failed to create test systems' });
   }
 });
 

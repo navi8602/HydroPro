@@ -32,3 +32,19 @@ CREATE TABLE "RentedSystem" (
   "createdAt" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   "updatedAt" TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+
+-- Insert test rented systems for users
+INSERT INTO "RentedSystem" ("systemId", "userId", "startDate", "endDate", "status")
+SELECT 
+  'system1', -- используем фиксированный systemId для примера
+  "User".id,
+  CURRENT_TIMESTAMP,
+  CURRENT_TIMESTAMP + INTERVAL '6 months',
+  'ACTIVE'
+FROM "User"
+WHERE NOT EXISTS (
+  SELECT 1 
+  FROM "RentedSystem" 
+  WHERE "RentedSystem"."userId" = "User".id
+);
