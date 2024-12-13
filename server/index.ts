@@ -77,10 +77,14 @@ app.post("/api/auth/verify-code", async (req, res) => {
   }
 });
 
-app.get("/api/users/:id", async (req, res) => {
+app.get("/api/users", async (req, res) => {
   try {
-    const { id } = req.params;
-    const userId = parseInt(id);
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+    const token = authHeader.split(' ')[1];
+    const userId = parseInt(token);
     
     if (isNaN(userId)) {
       return res.status(400).json({ error: 'Invalid user ID' });
