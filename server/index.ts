@@ -9,7 +9,7 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
-const port = process.env.PORT || 3002;
+const port = process.env.PORT || 3003;
 
 app.get('/', (_req, res) => {
   res.json({ status: 'Server is running' });
