@@ -1,14 +1,24 @@
+CREATE TABLE "User" (
+  id SERIAL PRIMARY KEY,
+  phone VARCHAR(255) UNIQUE NOT NULL,
+  role VARCHAR(50) DEFAULT 'USER',
+  "createdAt" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  "updatedAt" TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
 
 CREATE TABLE "System" (
-    id SERIAL PRIMARY KEY,
-    name VARCHAR(255) NOT NULL,
-    model VARCHAR(255),
-    description TEXT,
-    capacity INTEGER,
-    dimensions VARCHAR(255),
-    "monthlyPrice" DECIMAL(10,2),
-    "createdAt" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  id VARCHAR(255) PRIMARY KEY,
+  name VARCHAR(255) NOT NULL,
+  model VARCHAR(255) NOT NULL,
+  description TEXT,
+  capacity INTEGER,
+  dimensions JSONB,
+  features TEXT[],
+  "monthlyPrice" INTEGER,
+  "imageUrl" TEXT,
+  specifications JSONB,
+  "createdAt" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  "updatedAt" TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE "Plant" (

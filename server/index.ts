@@ -301,13 +301,76 @@ app.post("/api/auth/verify-code", async (req, res) => {
 });
 
 // Get available systems
+// Import mock data
+import { HYDROPONIC_SYSTEMS } from '../src/data/systems';
+
+// Get all systems with fallback to mock data
 app.get("/api/systems", async (req, res) => {
   try {
     const result = await pool.query('SELECT * FROM "System" ORDER BY "createdAt" DESC');
-    res.json(result.rows);
+    
+    if (result.rows.length === 0) {
+      // If no systems exist, create from mock data
+      const createPromises = HYDROPONIC_SYSTEMS.map(system => 
+        pool.query(
+          `INSERT INTO "System" (id, name, model, description, capacity, dimensions, features, "monthlyPrice", "imageUrl", specifications)
+           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+           ON CONFLICT (id) DO NOTHING
+           RETURNING *`,
+          [system.id, system.name, system.model, system.description, system.capacity, 
+           system.dimensions, system.features, system.monthlyPrice, system.imageUrl, 
+           system.specifications]
+        )
+      );
+      
+      await Promise.all(createPromises);
+      const newResult = await pool.query('SELECT * FROM "System" ORDER BY "createdAt" DESC');
+      res.json(newResult.rows);
+    } else {
+      res.json(result.rows);
+    }
   } catch (error) {
     console.error("Error fetching systems:", error);
     res.status(500).json({ error: "Failed to fetch systems" });
+  }
+});
+
+// Rent a system
+app.post("/api/systems/rent", async (req, res) => {
+  try {
+    const { systemId, months } = req.body;
+    const phone = req.headers.authorization;
+    
+    if (!phone) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+
+    const userResult = await pool.query(
+      'SELECT id FROM "User" WHERE phone = $1',
+      [phone]
+    );
+
+    if (userResult.rows.length === 0) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    const userId = userResult.rows[0].id;
+    const startDate = new Date();
+    const endDate = new Date();
+    endDate.setMonth(endDate.getMonth() + months);
+
+    const result = await pool.query(
+      `INSERT INTO "RentedSystem" ("systemId", "userId", "startDate", "endDate", status)
+       VALUES ($1, $2, $3, $4, 'ACTIVE')
+       RETURNING *`,
+      [systemId, userId, startDate, endDate]
+    );
+
+    console.log('System rented successfully:', result.rows[0]);
+    res.status(201).json(result.rows[0]);
+  } catch (error) {
+    console.error("Error renting system:", error);
+    res.status(500).json({ error: "Failed to rent system" });
   }
 });
 
