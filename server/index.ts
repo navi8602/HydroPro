@@ -21,11 +21,16 @@ const prisma = new PrismaClient();
 app.post("/api/auth/send-code", async (req, res) => {
   try {
     const { phone } = req.body;
+    if (!phone) {
+      return res.status(400).json({ error: 'Номер телефона обязателен' });
+    }
     // В реальном приложении здесь будет отправка СМС
     // Для демо используем код 1234
-    res.json({ success: true });
+    console.log('Sending code to phone:', phone);
+    res.json({ success: true, message: 'Код отправлен' });
   } catch (error) {
-    res.status(500).json({ error: 'Failed to send code' });
+    console.error('Error in send-code:', error);
+    res.status(500).json({ error: 'Ошибка при отправке кода' });
   }
 });
 
