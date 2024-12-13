@@ -8,7 +8,10 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 const app = express();
-app.use(cors());
+app.use(cors({
+  origin: true,
+  credentials: true
+}));
 app.use(express.json());
 
 const prisma = new PrismaClient();
@@ -53,6 +56,9 @@ app.post("/api/systems/rent", async (req, res) => {
     res.json(result.rows[0]);
   } catch (error) {
     console.error('Error renting system:', error);
+    if (error instanceof Error) {
+      res.status(500).json({ error: error.message });
+    } else {
     res.status(500).json({ error: 'Failed to rent system' });
   }
 });

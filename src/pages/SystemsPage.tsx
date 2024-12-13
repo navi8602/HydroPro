@@ -14,7 +14,7 @@ export function SystemsPage() {
 
   const handleRentSystem = async (systemId: string, months: number) => {
     try {
-      const response = await fetch('/api/systems/rent', {
+      const response = await fetch('http://0.0.0.0:3002/api/systems/rent', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
