@@ -134,7 +134,9 @@ app.post("/api/systems/rent", async (req, res) => {
       return res.status(401).json({ error: 'Unauthorized' });
     }
 
-    const userId = parseInt(authHeader.split(' ')[1]);
+    const token = authHeader.split(' ')[1];
+    const userId = parseInt(token);
+    
     const startDate = new Date();
     const endDate = new Date();
     endDate.setMonth(endDate.getMonth() + months);
@@ -151,11 +153,6 @@ app.post("/api/systems/rent", async (req, res) => {
     res.status(500).json({ error: 'Failed to rent system' });
   }
 });
-
-app.post("/api/systems/rent", async (req, res) => {
-  const { systemId, userId, months } = req.body;
-  
-  try {
     const startDate = new Date();
     const endDate = new Date();
     endDate.setMonth(endDate.getMonth() + months);
