@@ -180,14 +180,14 @@ app.post("/api/systems", async (req, res) => {
       return res.status(401).json({ error: "Unauthorized" });
     }
 
-    // Check if user is admin
+    // Check if user exists
     const userResult = await pool.query(
-      'SELECT role FROM "User" WHERE phone = $1',
+      'SELECT id FROM "User" WHERE phone = $1',
       [phone]
     );
 
-    if (userResult.rows.length === 0 || userResult.rows[0].role !== 'ADMIN') {
-      return res.status(403).json({ error: "Only admins can create systems" });
+    if (userResult.rows.length === 0) {
+      return res.status(404).json({ error: "User not found" });
     }
 
     const { name, model, description, capacity, dimensions, features, monthlyPrice, specifications } = req.body;
