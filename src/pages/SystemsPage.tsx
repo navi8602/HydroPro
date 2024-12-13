@@ -14,23 +14,27 @@ export function SystemsPage() {
   const handleRentSystem = async (systemId: string, months: number) => {
     try {
       const token = localStorage.getItem('token');
-      console.log('Current token:', token);
-      
       if (!token) {
         throw new Error('Не авторизован - токен отсутствует');
       }
 
       const requestBody = { systemId, months };
-      console.log('Request body:', requestBody);
+      const API_URL = 'http://0.0.0.0:3002';
       
-      const response = await fetch('/api/systems/rent', {
+      const response = await fetch(`${API_URL}/api/systems/rent`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify(requestBody)
+        body: JSON.stringify(requestBody),
+        credentials: 'include'
       });
+
+      const contentType = response.headers.get('content-type');
+      if (!contentType || !contentType.includes('application/json')) {
+        throw new Error('API returned invalid response format');
+      }
 
       if (!response.ok) {
         const errorData = await response.json();

@@ -33,6 +33,8 @@ app.get("/api/systems", async (req, res) => {
 
 app.post("/api/systems/rent", async (req, res) => {
   try {
+    res.setHeader('Content-Type', 'application/json');
+    
     const { systemId, months } = req.body;
     const authHeader = req.headers.authorization;
     
