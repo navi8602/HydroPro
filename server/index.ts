@@ -308,7 +308,6 @@ app.get("/api/systems", async (req, res) => {
     
     // If no systems exist, create from mock data
     if (result.rows.length === 0) {
-      // Import mock data directly here to avoid module issues
       const HYDROPONIC_SYSTEMS = [
         {
           id: 'hydropro-2000',
@@ -316,16 +315,16 @@ app.get("/api/systems", async (req, res) => {
           model: 'HP-2000',
           description: 'Компактная система для начинающих. Идеально подходит для выращивания зелени и небольших овощей.',
           capacity: 8,
-          dimensions: { width: 60, height: 150, depth: 30 },
+          dimensions: JSON.stringify({ width: 60, height: 150, depth: 30 }),
           features: ['Автоматический полив', 'LED освещение', 'Базовый контроль pH', 'Таймер освещения'],
           monthlyPrice: 2500,
           imageUrl: 'https://images.unsplash.com/photo-1558449907-39bb080974df',
-          specifications: {
+          specifications: JSON.stringify({
             powerConsumption: 100,
             waterCapacity: 20,
             lightingType: 'LED полного спектра',
             automationLevel: 'basic'
-          }
+          })
         },
         {
           id: 'hydropro-3000',
@@ -333,16 +332,16 @@ app.get("/api/systems", async (req, res) => {
           model: 'HP-3000',
           description: 'Продвинутая система для опытных пользователей.',
           capacity: 12,
-          dimensions: { width: 80, height: 180, depth: 40 },
+          dimensions: JSON.stringify({ width: 80, height: 180, depth: 40 }),
           features: ['Умный полив с датчиками', 'Регулируемое LED освещение'],
           monthlyPrice: 4500,
           imageUrl: 'https://images.unsplash.com/photo-1558449907-39bb080974df',
-          specifications: {
+          specifications: JSON.stringify({
             powerConsumption: 180,
             waterCapacity: 40,
             lightingType: 'Регулируемый LED',
             automationLevel: 'advanced'
-          }
+          })
         }
       ];
 
@@ -379,8 +378,6 @@ app.get("/api/systems", async (req, res) => {
     res.status(500).json({ error: "Failed to fetch systems" });
   }
 });
-  try {
-    const result = await pool.query('SELECT * FROM "System" ORDER BY "createdAt" DESC');
     
     if (result.rows.length === 0) {
       // If no systems exist, create from mock data
