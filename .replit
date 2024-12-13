@@ -9,8 +9,12 @@ channel = "stable-23_11"
 [env]
 PATH = "/home/runner/$REPL_SLUG/.config/npm/node_global/bin:/home/runner/$REPL_SLUG/node_modules/.bin"
 npm_config_prefix = "/home/runner/$REPL_SLUG/.config/npm/node_global"
-LD_LIBRARY_PATH = "/nix/store/0d0nx04g7lx1n5q3hm3fhd4c2xxwvlbm-openssl-1.1.1w/lib"
+DATABASE_URL="postgresql://postgres:postgres@localhost:5432/hydropro?schema=public"
 
 [deployment]
 run = ["sh", "-c", "npm run backend"]
 deploymentTarget = "cloudrun"
+
+[[ports]]
+localPort = 3003
+externalPort = 3003
