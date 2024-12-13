@@ -23,14 +23,13 @@ export function SystemsPage() {
       const requestBody = { systemId, months };
       console.log('Request body:', requestBody);
       
-      const response = await fetch('http://0.0.0.0:3002/api/systems/rent', {
+      const response = await fetch('/api/systems/rent', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify(requestBody),
-        credentials: 'include'
+        body: JSON.stringify(requestBody)
       });
 
       if (!response.ok) {

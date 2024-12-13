@@ -45,8 +45,15 @@ app.post("/api/systems/rent", async (req, res) => {
       return res.status(401).json({ error: 'No token provided' });
     }
 
-    const token = authHeader.split(' ')[1];
-    const userId = parseInt(token);
+    let userId;
+    try {
+      userId = parseInt(token);
+      if (isNaN(userId)) {
+        throw new Error('Invalid token format');
+      }
+    } catch (error) {
+      return res.status(401).json({ error: 'Invalid token format' });
+    }
     
     const startDate = new Date();
     const endDate = new Date();
