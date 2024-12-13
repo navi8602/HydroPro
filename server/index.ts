@@ -172,33 +172,24 @@ app.post("/api/systems/rent", async (req, res) => {
       userId: userResult?.rows[0]?.id,
       phone
 
-// Create new system (admin only)
+// Create new system
 app.post("/api/systems", async (req, res) => {
   try {
-    const phone = req.headers.authorization?.split(' ')[1];
+    const phone = req.headers.authorization;
     if (!phone) {
       return res.status(401).json({ error: "Unauthorized" });
-    }
-
-    // Check if user exists
-    const userResult = await pool.query(
-      'SELECT id FROM "User" WHERE phone = $1',
-      [phone]
-    );
-
-    if (userResult.rows.length === 0) {
-      return res.status(404).json({ error: "User not found" });
     }
 
     const { name, model, description, capacity, dimensions, features, monthlyPrice, specifications } = req.body;
     
     const result = await pool.query(
-      `INSERT INTO "System" (name, model, description, capacity, dimensions, features, "monthlyPrice", specifications)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+      `INSERT INTO "System" (name, model, description, capacity, dimensions, features, "monthlyPrice", specifications, "createdAt", "updatedAt")
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
        RETURNING *`,
       [name, model, description, capacity, dimensions, features, monthlyPrice, specifications]
     );
 
+    console.log('Created system:', result.rows[0]);
     res.status(201).json(result.rows[0]);
   } catch (error) {
     console.error("Error creating system:", error);
