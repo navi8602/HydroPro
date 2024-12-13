@@ -99,7 +99,34 @@ app.get("/api/user/systems", async (req, res) => {
 app.post("/api/systems/rent", async (req, res) => {
   try {
     const { systemId, months } = req.body;
-    const phone = req.headers.authorization?.split(' ')[1];
+    const phone = req.headers.authorization;
+    
+    if (!phone) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+
+    const userResult = await pool.query(
+      'SELECT id FROM "User" WHERE phone = $1',
+      [phone]
+    );
+
+    if (userResult.rows.length === 0) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    const userId = userResult.rows[0].id;
+    const startDate = new Date();
+    const endDate = new Date();
+    endDate.setMonth(endDate.getMonth() + months);
+
+    const result = await pool.query(
+      `INSERT INTO "RentedSystem" ("systemId", "userId", "startDate", "endDate", status)
+       VALUES ($1, $2, $3, $4, 'ACTIVE')
+       RETURNING *`,
+      [systemId, userId, startDate, endDate]
+    );
+
+    res.status(201).json(result.rows[0]);
     
     console.log('Attempting to rent system:', { systemId, months, phone });
     
