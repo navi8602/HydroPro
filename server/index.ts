@@ -64,6 +64,14 @@ app.post("/api/systems/rent", async (req, res) => {
     const { systemId, months } = req.body;
     const phone = req.headers.authorization?.split(' ')[1];
     
+    if (!phone) {
+      return res.status(401).json({ error: "Unauthorized: No phone provided" });
+    }
+
+    if (!systemId || !months) {
+      return res.status(400).json({ error: "Missing required fields" });
+    }
+
     const userResult = await pool.query(
       'SELECT id FROM "User" WHERE phone = $1',
       [phone]
@@ -78,6 +86,16 @@ app.post("/api/systems/rent", async (req, res) => {
     const endDate = new Date();
     endDate.setMonth(endDate.getMonth() + months);
 
+    // Check if system exists and is available
+    const systemResult = await pool.query(
+      'SELECT id FROM "System" WHERE id = $1',
+      [systemId]
+    );
+
+    if (systemResult.rows.length === 0) {
+      return res.status(404).json({ error: "System not found" });
+    }
+
     const result = await pool.query(
       `INSERT INTO "RentedSystem" ("systemId", "userId", "startDate", "endDate", status)
        VALUES ($1, $2, $3, $4, 'ACTIVE')
@@ -88,7 +106,10 @@ app.post("/api/systems/rent", async (req, res) => {
     res.json(result.rows[0]);
   } catch (error) {
     console.error("Error renting system:", error);
-    res.status(500).json({ error: "Failed to rent system" });
+    res.status(500).json({ 
+      error: "Failed to rent system",
+      details: error.message 
+    });
   }
 });
 
