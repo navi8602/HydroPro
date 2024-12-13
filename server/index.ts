@@ -38,8 +38,8 @@ app.post("/api/auth/verify-code", async (req, res) => {
   const { phone } = req.body;
   try {
     const result = await pool.query(
-      `INSERT INTO "User" (phone, role, "createdAt", "updatedAt") 
-       VALUES ($1, 'USER', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP) 
+      `INSERT INTO "User" (phone, role) 
+       VALUES ($1, 'USER') 
        ON CONFLICT (phone) 
        DO UPDATE SET "updatedAt" = CURRENT_TIMESTAMP 
        RETURNING *`,
@@ -74,7 +74,6 @@ app.get("/api/systems", async (req, res) => {
   }
 });
 
-// Error handling middleware
 app.use((err: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {
   console.error(err.stack);
   res.status(500).json({ error: "Internal Server Error" });
