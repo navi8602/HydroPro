@@ -26,41 +26,25 @@ import { NotificationProvider } from './contexts/NotificationContext';
 import type { RentedSystem } from './types/system';
 
 function App() {
-  const [rentedSystems, setRentedSystems] = useState<RentedSystem[]>([
-    {
-      id: '1',
-      name: 'HydroPro 2000',
-      capacity: 8,
-      rentalPeriod: 12,
-      startDate: '2024-03-01',
-      endDate: '2025-03-01',
-      plants: [
-        {
-          id: '1',
-          name: 'Базилик',
-          position: 1,
-          plantedDate: '2024-03-01',
-          expectedHarvestDate: '2024-04-01',
-          status: 'healthy'
-        },
-        {
-          id: '2',
-          name: 'Салат',
-          position: 2,
-          plantedDate: '2024-03-01',
-          expectedHarvestDate: '2024-04-01',
-          status: 'warning'
-        }
-      ],
-      metrics: {
-        temperature: 23,
-        humidity: 65,
-        nutrientLevel: 80,
-        phLevel: 6.5,
-        lastUpdated: new Date().toISOString()
+  const [rentedSystems, setRentedSystems] = useState<RentedSystem[]>([]);
+
+  useEffect(() => {
+    const fetchUserSystems = async () => {
+      try {
+        const response = await fetch('/api/user/systems', {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('phone')}`
+          }
+        });
+        const data = await response.json();
+        setRentedSystems(data);
+      } catch (error) {
+        console.error('Error fetching user systems:', error);
       }
-    }
-  ]);
+    };
+
+    fetchUserSystems();
+  }, []);
 
   const handleRentSystem = (systemId: string, months: number) => {
     const system = HYDROPONIC_SYSTEMS.find(s => s.id === systemId);
