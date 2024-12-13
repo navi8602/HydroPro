@@ -358,9 +358,21 @@ app.post("/api/systems/cancel", async (req, res) => {
   }
 });
 
+// Error handling middleware
+app.use((req, res, next) => {
+  res.status(404).json({
+    error: "The requested endpoint could not be found",
+    path: req.path,
+    method: req.method
+  });
+});
+
 app.use((err: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {
-  console.error(err.stack);
-  res.status(500).json({ error: "Internal Server Error" });
+  console.error("Error:", err.stack);
+  res.status(500).json({ 
+    error: "Internal Server Error",
+    message: err.message 
+  });
 });
 
 const startServer = async () => {
