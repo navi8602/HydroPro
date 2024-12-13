@@ -17,16 +17,6 @@ export function SystemsPage() {
       const requestBody = { systemId, months };
       
       console.log('Debug rental request:', {
-        url: 'http://0.0.0.0:3002/api/systems/rent',
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-          'Accept': 'application/json'
-        },
-        body: requestBody,
-        token: token
-      });
         token,
         systemId,
         months,
@@ -36,7 +26,7 @@ export function SystemsPage() {
           'Authorization': `Bearer ${token}`,
           'Accept': 'application/json'
         },
-        body: { systemId, months }
+        body: requestBody
       });
       if (!token) {
         addNotification({
