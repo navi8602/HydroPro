@@ -6,14 +6,12 @@ import { PrismaClient } from '@prisma/client';
 const app = express();
 const prisma = new PrismaClient();
 
-// Middleware
 app.use(cors());
 app.use(express.json());
 
 // Auth routes
 app.post('/api/auth/send-code', (req, res) => {
   const { phone } = req.body;
-  // В реальном приложении здесь будет отправка SMS
   res.json({ success: true });
 });
 
@@ -31,7 +29,6 @@ app.post('/api/auth/verify-code', async (req, res) => {
   }
 });
 
-// Systems routes
 app.get('/api/systems', async (req, res) => {
   try {
     const systems = await prisma.rentedSystem.findMany();
@@ -41,7 +38,6 @@ app.get('/api/systems', async (req, res) => {
   }
 });
 
-const port = 3003;
-app.listen(port, '0.0.0.0', () => {
-  console.log(`Server running on http://0.0.0.0:${port}`);
+app.listen(3003, '0.0.0.0', () => {
+  console.log('Server running on http://0.0.0.0:3003');
 });
