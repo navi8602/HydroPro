@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import InputMask from 'react-input-mask';
 
-export default function LoginPage() {
+export function LoginPage() {
   const [phone, setPhone] = useState('');
   const [code, setCode] = useState('');
   const [step, setStep] = useState('phone'); // phone or code
@@ -95,3 +95,5 @@ export default function LoginPage() {
     </div>
   );
 }
+
+export default LoginPage;
