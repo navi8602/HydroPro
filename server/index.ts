@@ -38,9 +38,10 @@ app.post("/api/auth/verify-code", async (req, res) => {
   const { phone } = req.body;
   try {
     const result = await pool.query(
-      `INSERT INTO "User" (phone, role) 
-       VALUES ($1, 'USER') 
-       ON CONFLICT (phone) DO UPDATE SET phone = $1 
+      `INSERT INTO "User" (phone, role, "updatedAt") 
+       VALUES ($1, 'USER', CURRENT_TIMESTAMP) 
+       ON CONFLICT (phone) DO UPDATE 
+       SET phone = $1, "updatedAt" = CURRENT_TIMESTAMP 
        RETURNING *`,
       [phone]
     );
