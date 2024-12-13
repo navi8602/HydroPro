@@ -36,8 +36,13 @@ app.post("/api/systems/rent", async (req, res) => {
     const { systemId, months } = req.body;
     const authHeader = req.headers.authorization;
     
-    if (!authHeader) {
-      return res.status(401).json({ error: 'Unauthorized' });
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({ error: 'Invalid authorization header' });
+    }
+
+    const token = authHeader.split(' ')[1];
+    if (!token) {
+      return res.status(401).json({ error: 'No token provided' });
     }
 
     const token = authHeader.split(' ')[1];

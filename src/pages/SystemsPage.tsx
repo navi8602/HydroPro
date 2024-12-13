@@ -1,4 +1,3 @@
-
 import { SystemList } from '../components/rental/SystemList';
 import { ArrowLeft } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
