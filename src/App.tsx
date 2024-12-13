@@ -1,5 +1,13 @@
 
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { 
+  BrowserRouter as Router, 
+  Routes, 
+  Route,
+  future
+} from 'react-router-dom';
+
+future.v7_startTransition = true;
+future.v7_relativeSplatPath = true;
 import { Layout } from './components/layout/Layout';
 import { DashboardPage } from './pages/DashboardPage';
 import { SystemsPage } from './pages/SystemsPage';
