@@ -85,21 +85,30 @@ app.get("/api/users", async (req, res) => {
     }
 
     const token = authHeader.split(' ')[1];
-    const userId = parseInt(token);
+    
+    // Проверяем, существует ли пользователь
+    const userCheck = await pool.query(
+      'SELECT id FROM "User" WHERE id = $1',
+      [token]
+    );
 
-    if (isNaN(userId)) {
-      return res.status(400).json({ error: 'Invalid user ID' });
+    if (userCheck.rows.length === 0) {
+      // Если пользователь не найден, создаем нового
+      const newUser = await pool.query(
+        'INSERT INTO "User" (id) VALUES ($1) RETURNING id',
+        [token]
+      );
     }
 
     const result = await pool.query(
       `SELECT u.id, u.phone, u.role, u."createdAt" as "registeredAt",
-      (SELECT json_agg(json_build_object(
+      COALESCE((SELECT json_agg(json_build_object(
         'systemId', rs."systemId",
         'accessLevel', rs.status
-      )) FROM "RentedSystem" rs WHERE rs."userId" = u.id) as permissions
+      )) FROM "RentedSystem" rs WHERE rs."userId" = u.id), '[]') as permissions
       FROM "User" u
       WHERE u.id = $1`,
-      [userId]
+      [token]
     );
     
     if (result.rows.length === 0) {
