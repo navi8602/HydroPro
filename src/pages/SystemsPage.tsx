@@ -15,21 +15,29 @@ export function SystemsPage() {
     try {
       const token = localStorage.getItem('token');
       if (!token) {
-        throw new Error('Не авторизован - токен отсутствует');
+        addNotification({
+          title: 'Ошибка',
+          message: 'Необходимо авторизоваться',
+          type: 'error'
+        });
+        return;
       }
 
       const requestBody = { systemId, months };
-      const API_URL = 'http://0.0.0.0:3002';
       
-      const response = await fetch(`${API_URL}/api/systems/rent`, {
+      const response = await fetch('http://0.0.0.0:3002/api/systems/rent', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify(requestBody),
-        credentials: 'include'
+        body: JSON.stringify(requestBody)
       });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to rent system');
+      }
 
       const contentType = response.headers.get('content-type');
       if (!contentType || !contentType.includes('application/json')) {

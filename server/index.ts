@@ -33,11 +33,12 @@ app.get("/api/systems", async (req, res) => {
 
 app.post("/api/systems/rent", async (req, res) => {
   try {
-    res.setHeader('Content-Type', 'application/json');
-    
     const { systemId, months } = req.body;
+    if (!systemId || !months) {
+      return res.status(400).json({ error: 'Missing required fields' });
+    }
+
     const authHeader = req.headers.authorization;
-    
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
       return res.status(401).json({ error: 'Invalid authorization header' });
     }
@@ -51,11 +52,13 @@ app.post("/api/systems/rent", async (req, res) => {
     try {
       userId = parseInt(token);
       if (isNaN(userId)) {
-        throw new Error('Invalid token format');
+        return res.status(401).json({ error: 'Invalid user ID' });
       }
-    } catch (error) {
-      return res.status(401).json({ error: 'Invalid token format' });
-    }
+      
+      const userExists = await pool.query('SELECT id FROM "User" WHERE id = $1', [userId]);
+      if (userExists.rows.length === 0) {
+        return res.status(404).json({ error: 'User not found' });
+      }
     
     const startDate = new Date();
     const endDate = new Date();
