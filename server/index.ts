@@ -38,14 +38,23 @@ app.post("/api/auth/verify-code", async (req, res) => {
   const { phone } = req.body;
   try {
     const result = await pool.query(
-      `INSERT INTO "User" (phone) 
-       VALUES ($1) 
+      `INSERT INTO "User" (phone, role) 
+       VALUES ($1, 'USER') 
        ON CONFLICT (phone) 
        DO UPDATE SET "updatedAt" = CURRENT_TIMESTAMP 
        RETURNING *`,
       [phone]
     );
-    res.json({ success: true, user: result.rows[0] });
+    
+    if (result.rows.length > 0) {
+      res.json({ 
+        success: true, 
+        user: result.rows[0],
+        token: 'temp-token'
+      });
+    } else {
+      res.status(400).json({ success: false, error: 'Failed to create user' });
+    }
   } catch (error) {
     console.error("Error during user upsert:", error);
     res.status(500).json({
