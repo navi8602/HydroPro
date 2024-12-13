@@ -1,50 +1,33 @@
 
-import { useState, useEffect } from 'react';
-import { 
-  BrowserRouter, 
-  Routes, 
-  Route, 
-  Navigate,
-  UNSAFE_DataRouterContext,
-  UNSAFE_DataRouterStateContext 
-} from 'react-router-dom';
-import { startTransition } from 'react';
-
-// Enable v7 features
-UNSAFE_DataRouterContext.provider = {
-  ...UNSAFE_DataRouterContext.provider,
-  v7_startTransition: startTransition
-};
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { NotificationProvider } from './contexts/NotificationContext';
 import { Layout } from './components/layout/Layout';
+import { LoginPage } from './pages/LoginPage';
 import { DashboardPage } from './pages/DashboardPage';
 import { SystemsPage } from './pages/SystemsPage';
 import { PlantsPage } from './pages/PlantsPage';
-import { LoginPage } from './pages/LoginPage';
 import { UsersPage } from './pages/UsersPage';
-import { HYDROPONIC_SYSTEMS } from './data/systems';
-import { NotificationProvider } from './contexts/NotificationContext';
-import type { RentedSystem } from './types/system';
+import { useState, useEffect } from 'react';
+import { RentedSystem } from './types/system';
 
-function App() {
+function ProtectedRoute({ children }: { children: JSX.Element }) {
+  const token = localStorage.getItem('token');
+  if (!token) {
+    return <Navigate to="/login" replace />;
+  }
+  return children;
+}
+
+function AuthRoute({ children }: { children: JSX.Element }) {
+  const token = localStorage.getItem('token');
+  if (token) {
+    return <Navigate to="/dashboard" replace />;
+  }
+  return children;
+}
+
+export default function App() {
   const [rentedSystems, setRentedSystems] = useState<RentedSystem[]>([]);
-
-  useEffect(() => {
-    const fetchUserSystems = async () => {
-      try {
-        const response = await fetch('/api/user/systems', {
-          headers: {
-            'Authorization': `${localStorage.getItem('phone')}`
-          }
-        });
-        const data = await response.json();
-        setRentedSystems(data);
-      } catch (error) {
-        console.error('Error fetching user systems:', error);
-      }
-    };
-
-    fetchUserSystems();
-  }, []);
 
   const handleRentSystem = async (systemId: string, months: number) => {
     try {
@@ -52,39 +35,32 @@ function App() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `${localStorage.getItem('phone')}`
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
         },
         body: JSON.stringify({ systemId, months })
       });
 
       if (!response.ok) {
-        console.error('❌ Ошибка при аренде системы');
-        const errorText = await response.text();
-        throw new Error(`Failed to rent system: ${errorText}`);
+        throw new Error('Failed to rent system');
       }
-      
-      console.log('✅ Система успешно арендована');
-      
-      // Refresh systems list after renting
+
       await fetchUserSystems();
-      
     } catch (error) {
-      const errorDetails = error instanceof Error ? error.message : 'Unknown error';
-      console.error('Error renting system:', {
-        error: errorDetails,
-        systemId,
-        months
-      });
+      console.error('Error renting system:', error);
+      throw error;
     }
   };
-  
+
   const fetchUserSystems = async () => {
     try {
-      const response = await fetch('/api/user/systems', {
+      const response = await fetch('/api/systems/user', {
         headers: {
-          'Authorization': `${localStorage.getItem('phone')}`
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
       });
+      if (!response.ok) {
+        throw new Error('Failed to fetch systems');
+      }
       const data = await response.json();
       setRentedSystems(data);
     } catch (error) {
@@ -96,18 +72,24 @@ function App() {
     <NotificationProvider>
       <BrowserRouter>
         <Routes>
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/" element={<Navigate to="/login" replace />} />
-          <Route element={<Layout />}>
+          <Route path="/login" element={
+            <AuthRoute>
+              <LoginPage />
+            </AuthRoute>
+          } />
+          <Route element={
+            <ProtectedRoute>
+              <Layout />
+            </ProtectedRoute>
+          }>
             <Route path="/dashboard" element={<DashboardPage rentedSystems={rentedSystems} />} />
             <Route path="/systems" element={<SystemsPage onRentSystem={handleRentSystem} />} />
             <Route path="/plants" element={<PlantsPage />} />
             <Route path="/users" element={<UsersPage />} />
           </Route>
+          <Route path="/" element={<Navigate to="/dashboard" replace />} />
         </Routes>
       </BrowserRouter>
     </NotificationProvider>
   );
 }
-
-export default App;
