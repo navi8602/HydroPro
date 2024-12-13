@@ -98,7 +98,16 @@ app.get("/api/systems/user", async (req, res) => {
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
       return res.status(401).json({ error: 'Unauthorized' });
     }
-    const userId = parseInt(authHeader.split(' ')[1]);
+    
+    const token = authHeader.split(' ')[1];
+    if (!token) {
+      return res.status(401).json({ error: 'Invalid token' });
+    }
+
+    const userId = parseInt(token);
+    if (isNaN(userId)) {
+      return res.status(400).json({ error: 'Invalid user ID' });
+    }
     
     const result = await pool.query(
       `SELECT s.*, rs.*, 
