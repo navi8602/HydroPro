@@ -1,42 +1,50 @@
 
-# HydroPro - Setup Instructions
+# HydroPro - Система управления гидропонными установками
 
-## Prerequisites
-1. Node.js (v20.x or later)
-2. PostgreSQL (v16.x)
-3. npm (comes with Node.js)
+## О проекте
+HydroPro - это веб-приложение для управления гидропонными системами выращивания растений. Система позволяет:
+- Мониторить состояние растений и параметры среды (температура, влажность, pH)
+- Управлять несколькими гидропонными установками
+- Отслеживать рост растений
+- Получать уведомления о необходимых действиях
+- Арендовать новые системы
 
-## Database Setup
-1. Install PostgreSQL and create a database named 'hydropro':
+## Необходимые компоненты
+1. Node.js (версия 20.x или выше)
+2. PostgreSQL (версия 16.x)
+3. npm (устанавливается вместе с Node.js)
+
+## Настройка базы данных
+1. Установите PostgreSQL и создайте базу данных 'hydropro':
 ```sql
 CREATE DATABASE hydropro;
 ```
 
-## Project Setup
-1. Clone or download the project
-2. Install dependencies:
+## Установка проекта
+1. Склонируйте или скачайте проект
+2. Установите зависимости:
 ```bash
 npm install
 ```
 
-3. Create a .env file in the root directory with:
+3. Создайте файл .env в корневой директории со следующим содержимым:
 ```
 DATABASE_URL="postgresql://postgres:postgres@localhost:5432/hydropro?schema=public"
 ```
 
-4. Start the development server:
+4. Запустите сервер разработки:
 ```bash
 npm run dev
 ```
 
-The application will start at:
-- Frontend: http://localhost:3000
-- Backend: http://localhost:3003
+Приложение будет доступно по адресам:
+- Фронтенд: http://localhost:3000
+- Бэкенд: http://localhost:3003
 
-## Available Scripts
-- `npm run frontend` - Runs only the frontend
-- `npm run backend` - Runs only the backend
-- `npm run dev` - Runs both frontend and backend concurrently
+## Доступные команды
+- `npm run frontend` - Запуск только фронтенда
+- `npm run backend` - Запуск только бэкенда
+- `npm run dev` - Запуск фронтенда и бэкенда одновременно
 
-## Note
-Make sure PostgreSQL service is running before starting the application.
+## Важно
+Убедитесь, что сервис PostgreSQL запущен перед запуском приложения.
