@@ -37,6 +37,12 @@ app.post("/api/systems/rent", async (req, res) => {
     console.log('Received rental request:', {
       body: req.body,
       headers: req.headers,
+      auth: req.headers.authorization,
+      systemId: req.body.systemId,
+      months: req.body.months,
+      token: req.headers.authorization?.split(' ')[1]
+      body: req.body,
+      headers: req.headers,
       auth: req.headers.authorization
     });
     const { systemId, months } = req.body;
