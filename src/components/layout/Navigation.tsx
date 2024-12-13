@@ -1,5 +1,5 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Home, Package, Sprout, User, LogOut } from 'lucide-react';
+import { Home, Package, Sprout, User, LogOut, UserCircle } from 'lucide-react';
 import { NotificationCenter } from '../notifications/NotificationCenter';
 
 export function Navigation() {
