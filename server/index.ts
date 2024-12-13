@@ -127,6 +127,32 @@ app.post('/api/systems/create-test', async (req, res) => {
 });
 
 app.post("/api/systems/rent", async (req, res) => {
+  try {
+    const { systemId, months } = req.body;
+    const authHeader = req.headers.authorization;
+    if (!authHeader) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    const userId = parseInt(authHeader.split(' ')[1]);
+    const startDate = new Date();
+    const endDate = new Date();
+    endDate.setMonth(endDate.getMonth() + months);
+
+    const result = await pool.query(
+      `INSERT INTO "RentedSystem" ("systemId", "userId", "startDate", "endDate", "status")
+       VALUES ($1, $2, $3, $4, $5) RETURNING *`,
+      [systemId, userId, startDate, endDate, 'ACTIVE']
+    );
+
+    res.json(result.rows[0]);
+  } catch (error) {
+    console.error('Error renting system:', error);
+    res.status(500).json({ error: 'Failed to rent system' });
+  }
+});
+
+app.post("/api/systems/rent", async (req, res) => {
   const { systemId, userId, months } = req.body;
   
   try {
