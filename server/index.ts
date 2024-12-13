@@ -1,4 +1,3 @@
-
 import express from 'express';
 import { PrismaClient } from '@prisma/client';
 import cors from 'cors';
@@ -100,27 +99,33 @@ app.get("/api/users", async (req, res) => {
       );
     }
 
-    const result = await pool.query(
-      `SELECT u.id, u.phone, u.role, u."createdAt" as "registeredAt",
-      COALESCE((SELECT json_agg(json_build_object(
-        'systemId', rs."systemId",
-        'accessLevel', rs.status
-      )) FROM "RentedSystem" rs WHERE rs."userId" = u.id), '[]') as permissions
-      FROM "User" u
-      WHERE u.id = $1`,
-      [token]
-    );
-    
-    if (result.rows.length === 0) {
-      return res.status(404).json({ error: 'User not found' });
-    }
+    try {
+      const result = await pool.query(
+        `SELECT u.id, u.phone, u.role, u."createdAt" as "registeredAt",
+        COALESCE((SELECT json_agg(json_build_object(
+          'systemId', rs."systemId",
+          'accessLevel', rs.status
+        )) FROM "RentedSystem" rs WHERE rs."userId" = u.id), '[]') as permissions
+        FROM "User" u
+        WHERE u.id = $1`,
+        [token]
+      );
+      
+      if (result.rows.length === 0) {
+        return res.status(404).json({ error: 'User not found' });
+      }
 
-    res.json(result.rows[0]);
+      res.json(result.rows[0]);
+    } catch (error) {
+      console.error('Error fetching users:', error);
+      res.status(500).json({ error: 'Failed to fetch users' });
+    }
   } catch (error) {
-    console.error('Error fetching users:', error);
+    console.error('Error in /api/users:', error);
     res.status(500).json({ error: 'Failed to fetch users' });
   }
 });
+
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
 });

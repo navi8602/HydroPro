@@ -35,7 +35,8 @@ export function ProfilePage() {
     })
     .catch(err => {
       console.error('Error fetching user:', err);
-      setError('Ошибка загрузки профиля');
+      setError(err.message || 'Ошибка загрузки профиля');
+      setLoading(false);
     });
   }, []);
 

@@ -61,7 +61,8 @@ export function UsersPage() {
       setUsers(data);
     } catch (error) {
       console.error('Error fetching users:', error);
-      setError('Ошибка при загрузке пользователей');
+      setError(error.message || 'Ошибка при загрузке пользователей');
+      setLoading(false);
     } finally {
       setLoading(false);
     }
