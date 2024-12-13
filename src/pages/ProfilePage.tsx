@@ -9,7 +9,19 @@ export function ProfilePage() {
   const [rentedSystems, setRentedSystems] = useState<RentedSystem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const userId = localStorage.getItem('token');
+  const token = localStorage.getItem('token');
+  const [userId, setUserId] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (token) {
+      try {
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        setUserId(payload.id);
+      } catch (error) {
+        console.error('Error parsing token:', error);
+      }
+    }
+  }, [token]);
 
   useEffect(() => {
     fetchUserSystems();
