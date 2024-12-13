@@ -7,11 +7,15 @@ const prisma = new PrismaClient();
 const app = express();
 const port = process.env.PORT || 3002;
 
-app.use(express.json());
 app.use(cors({
   origin: ['http://0.0.0.0:3000', 'http://localhost:3000', '*'],
   credentials: true
 }));
+app.use(express.json());
+
+app.get('/api/health', (_req, res) => {
+  res.json({ status: 'ok' });
+});
 
 app.post('/api/auth/send-code', (req, res) => {
   const { phone } = req.body;
@@ -26,7 +30,10 @@ app.post('/api/auth/verify-code', async (req, res) => {
       const user = await prisma.user.upsert({
         where: { phone },
         update: {},
-        create: { phone }
+        create: { 
+          phone,
+          role: 'USER'
+        }
       });
       res.json({ success: true, user });
     } catch (error) {
