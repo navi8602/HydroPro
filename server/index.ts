@@ -21,6 +21,26 @@ app.use(cors({
 
 app.use(express.json());
 
+// Update user role
+app.patch("/api/users/role", async (req, res) => {
+  try {
+    const { phone, role } = req.body;
+    const result = await pool.query(
+      'UPDATE "User" SET role = $1 WHERE phone = $2 RETURNING *',
+      [role, phone]
+    );
+    
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: "User not found" });
+    }
+    
+    res.json(result.rows[0]);
+  } catch (error) {
+    console.error("Error updating user role:", error);
+    res.status(500).json({ error: "Failed to update user role" });
+  }
+});
+
 app.use((req, res, next) => {
   console.log(`${req.method} ${req.url}`);
   next();
