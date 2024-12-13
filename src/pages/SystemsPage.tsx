@@ -19,17 +19,20 @@ export function SystemsPage() {
         throw new Error('Не авторизован');
       }
       
-      const response = await fetch('http://0.0.0.0:3002/api/systems/rent', {
+      const API_URL = import.meta.env.VITE_API_URL || 'http://0.0.0.0:3002';
+      const response = await fetch(`${API_URL}/api/systems/rent`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify({ systemId, months })
+        body: JSON.stringify({ systemId, months }),
+        credentials: 'include'
       });
 
       if (!response.ok) {
-        throw new Error('Failed to rent system');
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || 'Failed to rent system');
       }
 
       addNotification({
