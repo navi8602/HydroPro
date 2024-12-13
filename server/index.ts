@@ -147,6 +147,41 @@ app.post("/api/systems/rent", async (req, res) => {
       systemId,
       userId: userResult?.rows[0]?.id,
       phone
+
+// Create new system (admin only)
+app.post("/api/systems", async (req, res) => {
+  try {
+    const phone = req.headers.authorization?.split(' ')[1];
+    if (!phone) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+
+    // Check if user is admin
+    const userResult = await pool.query(
+      'SELECT role FROM "User" WHERE phone = $1',
+      [phone]
+    );
+
+    if (userResult.rows.length === 0 || userResult.rows[0].role !== 'ADMIN') {
+      return res.status(403).json({ error: "Only admins can create systems" });
+    }
+
+    const { name, model, description, capacity, dimensions, features, monthlyPrice, specifications } = req.body;
+    
+    const result = await pool.query(
+      `INSERT INTO "System" (name, model, description, capacity, dimensions, features, "monthlyPrice", specifications)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+       RETURNING *`,
+      [name, model, description, capacity, dimensions, features, monthlyPrice, specifications]
+    );
+
+    res.status(201).json(result.rows[0]);
+  } catch (error) {
+    console.error("Error creating system:", error);
+    res.status(500).json({ error: "Failed to create system" });
+  }
+});
+
     };
     console.error("Error renting system:", errorDetails);
     res.status(500).json({ 
