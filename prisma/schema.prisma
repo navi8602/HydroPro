@@ -1,3 +1,4 @@
+
 generator client {
   provider = "prisma-client-js"
 }
@@ -43,6 +44,7 @@ model RentedSystem {
   endDate      DateTime
   plants       Plant[]
   metrics      Metrics[]
+  permissions  Permission[]
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 }
