@@ -52,7 +52,7 @@ function App() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('phone')}`
+          'Authorization': `${localStorage.getItem('phone')}`
         },
         body: JSON.stringify({ systemId, months })
       });

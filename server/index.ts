@@ -227,8 +227,25 @@ app.get("/api/user/systems", async (req, res) => {
 
 // Rent a system
 app.post("/api/systems/rent", async (req, res) => {
-  const { systemId, months } = req.body;
-  const userId = req.headers.authorization?.split(' ')[1];
+  try {
+    const { systemId, months } = req.body;
+    const phone = req.headers.authorization;
+    
+    if (!phone) {
+      return res.status(401).json({ error: "Unauthorized: No phone provided" });
+    }
+
+    // Get userId by phone
+    const userResult = await pool.query(
+      'SELECT id FROM "User" WHERE phone = $1',
+      [phone]
+    );
+
+    if (userResult.rows.length === 0) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    const userId = userResult.rows[0].id;
   
   try {
     const startDate = new Date();
