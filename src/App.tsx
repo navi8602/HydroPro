@@ -58,8 +58,11 @@ function App() {
       });
 
       if (!response.ok) {
+        console.error('❌ Ошибка при аренде системы');
         throw new Error('Failed to rent system');
       }
+      
+      console.log('✅ Система успешно арендована');
 
       // Refresh systems list after renting
       const fetchUserSystems = async () => {
