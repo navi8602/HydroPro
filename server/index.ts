@@ -5,45 +5,35 @@ import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 const app = express();
-const port = process.env.PORT || 3003;
 
-app.use(express.json());
 app.use(cors());
+app.use(express.json());
 
-// Health check endpoint
 app.get('/', (_req, res) => {
-  res.json({ status: 'Server is running' });
+  res.json({ status: 'ok' });
 });
 
 app.post('/api/auth/send-code', (req, res) => {
   const { phone } = req.body;
-  res.json({ success: true, message: 'Code sent successfully' });
+  res.json({ success: true, message: 'Code sent' });
 });
 
 app.post('/api/auth/verify-code', async (req, res) => {
   const { phone, code } = req.body;
   
-  if (code === '1234') {
-    try {
-      const user = await prisma.user.upsert({
-        where: { phone },
-        update: {},
-        create: { phone, role: 'USER' }
-      });
-      res.json({ success: true, user });
-    } catch (error) {
-      console.error('Error:', error);
-      res.status(500).json({ success: false, error: 'Internal server error' });
-    }
-  } else {
-    res.status(400).json({ success: false, error: 'Invalid code' });
+  try {
+    const user = await prisma.user.upsert({
+      where: { phone },
+      update: {},
+      create: { phone, role: 'USER' }
+    });
+    res.json({ success: true, user });
+  } catch (error) {
+    res.status(500).json({ success: false, error: 'Server error' });
   }
 });
 
+const port = 3003;
 app.listen(port, '0.0.0.0', () => {
-  console.log(`Server running on port ${port}`);
-});
-
-process.on('SIGTERM', async () => {
-  await prisma.$disconnect();
+  console.log(`Server running on http://0.0.0.0:${port}`);
 });
