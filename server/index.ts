@@ -34,6 +34,11 @@ app.get("/api/systems", async (req, res) => {
 
 app.post("/api/systems/rent", async (req, res) => {
   try {
+    console.log('Received rental request:', {
+      body: req.body,
+      headers: req.headers,
+      auth: req.headers.authorization
+    });
     const { systemId, months } = req.body;
     if (!systemId || !months) {
       return res.status(400).json({ error: 'Missing required fields' });

@@ -14,6 +14,18 @@ export function SystemsPage() {
   const handleRentSystem = async (systemId: string, months: number) => {
     try {
       const token = localStorage.getItem('token');
+      console.log('Debug rental request:', {
+        token,
+        systemId,
+        months,
+        url: 'http://0.0.0.0:3002/api/systems/rent',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/json'
+        },
+        body: { systemId, months }
+      });
       if (!token) {
         addNotification({
           title: 'Ошибка',
