@@ -60,29 +60,25 @@ app.post("/api/systems/rent", async (req, res) => {
         return res.status(404).json({ error: 'User not found' });
       }
     
-    const startDate = new Date();
-    const endDate = new Date();
-    endDate.setMonth(endDate.getMonth() + months);
+      const startDate = new Date();
+      const endDate = new Date();
+      endDate.setMonth(endDate.getMonth() + months);
 
-    const result = await pool.query(
-      `INSERT INTO "RentedSystem" ("systemId", "userId", "startDate", "endDate", "status")
-       VALUES ($1, $2, $3, $4, $5) RETURNING *`,
-      [systemId, userId, startDate, endDate, 'ACTIVE']
-    );
+      const result = await pool.query(
+        `INSERT INTO "RentedSystem" ("systemId", "userId", "startDate", "endDate", "status")
+         VALUES ($1, $2, $3, $4, $5) RETURNING *`,
+        [systemId, userId, startDate, endDate, 'ACTIVE']
+      );
 
-    res.json(result.rows[0]);
-  } catch (error) {
-    console.error('Error renting system:', error);
-    if (error instanceof Error) {
-      res.status(500).json({ error: error.message });
-    } else {
-      res.status(500).json({ error: 'Failed to rent system' });
+      res.json(result.rows[0]);
+    } catch (error) {
+      console.error('Error renting system:', error);
+      res.status(500).json({ error: error instanceof Error ? error.message : 'Failed to rent system' });
     }
+  } catch (error) {
+    console.error('Error in rent endpoint:', error);
+    res.status(500).json({ error: 'Internal server error' });
   }
-});
-
-app.listen(port, '0.0.0.0', () => {
-  console.log(`Server running on port ${port}`);
 });
 
 app.listen(port, '0.0.0.0', () => {
