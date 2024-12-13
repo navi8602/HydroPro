@@ -5,12 +5,12 @@ import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 const app = express();
+const port = process.env.PORT || 3003;
 
 app.use(express.json());
 app.use(cors());
 
-const port = process.env.PORT || 3003;
-
+// Health check endpoint
 app.get('/', (_req, res) => {
   res.json({ status: 'Server is running' });
 });
@@ -42,4 +42,8 @@ app.post('/api/auth/verify-code', async (req, res) => {
 
 app.listen(port, '0.0.0.0', () => {
   console.log(`Server running on port ${port}`);
+});
+
+process.on('SIGTERM', async () => {
+  await prisma.$disconnect();
 });
