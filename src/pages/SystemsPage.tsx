@@ -36,8 +36,6 @@ export function SystemsPage() {
         });
         return;
       }
-
-      const requestBody = { systemId, months };
       
       const response = await fetch('http://0.0.0.0:3002/api/systems/rent', {
         method: 'POST',
