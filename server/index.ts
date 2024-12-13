@@ -1,11 +1,14 @@
 
 import express from "express";
 import cors from "cors";
-import { PrismaClient } from "@prisma/client";
+import { Pool } from 'pg';
 import getPort from "get-port";
 
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL
+});
+
 const app = express();
-const prisma = new PrismaClient();
 
 app.use(cors({
   origin: "*",
@@ -33,12 +36,14 @@ app.post("/api/auth/send-code", (req, res) => {
 app.post("/api/auth/verify-code", async (req, res) => {
   const { phone } = req.body;
   try {
-    const user = await prisma.user.upsert({
-      where: { phone },
-      update: {},
-      create: { phone, role: "USER" },
-    });
-    res.json({ success: true, user });
+    const result = await pool.query(
+      `INSERT INTO "User" (phone, role) 
+       VALUES ($1, 'USER') 
+       ON CONFLICT (phone) DO UPDATE SET phone = $1 
+       RETURNING *`,
+      [phone]
+    );
+    res.json({ success: true, user: result.rows[0] });
   } catch (error) {
     console.error("Error during user upsert:", error);
     res.status(500).json({
@@ -50,8 +55,8 @@ app.post("/api/auth/verify-code", async (req, res) => {
 
 app.get("/api/systems", async (req, res) => {
   try {
-    const systems = await prisma.rentedSystem.findMany();
-    res.json(systems);
+    const result = await pool.query('SELECT * FROM "RentedSystem"');
+    res.json(result.rows);
   } catch (error) {
     console.error("Error fetching systems:", error);
     res.status(500).json({ error: "Failed to fetch systems" });
